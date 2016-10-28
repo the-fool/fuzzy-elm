@@ -1,56 +1,56 @@
 module Main exposing (..)
 
-import Html exposing (Html, div, input, text)
-import Html.App as Html
-import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
-import String
+{- vendor -}
+
+import Navigation
+import Hop
+import Hop.Types exposing (Address)
+import UrlParser
 
 
+{- src -}
+
+import Models exposing (AppModel, newAppModel)
+import Routing exposing (..)
+import View exposing (view)
+import Messages exposing (Msg)
+import Update exposing (update)
+
+
+main : Program Never
 main =
-    Html.beginnerProgram
-        { model = model
+    Navigation.program urlParser
+        { init = init
         , view = view
         , update = update
+        , urlUpdate = urlUpdate
+        , subscriptions = (always Sub.none)
         }
 
 
-
--- MODEL
-
-
-type alias Model =
-    { content : String
-    }
-
-
-model : Model
-model =
-    Model ""
+urlUpdate : ( Route, Address ) -> AppModel -> ( AppModel, Cmd Msg )
+urlUpdate ( route, address ) model =
+    let
+        _ =
+            Debug.log "urlUpdate address" address
+    in
+        ( { model | route = route, address = address }, Cmd.none )
 
 
+urlParser : Navigation.Parser ( Route, Address )
+urlParser =
+    let
+        parse path =
+            path
+                |> UrlParser.parse identity Routing.routes
+                |> Result.withDefault NotFoundRoute
 
--- UPDATE
-
-
-type Msg
-    = Change String
-
-
-update : Msg -> Model -> Model
-update msg model =
-    case msg of
-        Change newContent ->
-            { model | content = newContent }
-
+        matcher =
+            Hop.makeResolver Routing.config parse
+    in
+        Navigation.makeParser (.href >> matcher)
 
 
--- VIEW
-
-
-view : Model -> Html Msg
-view model =
-    div []
-        [ input [ placeholder "Text to reverse", onInput Change ] []
-        , div [] [ text (String.reverse model.content) ]
-        ]
+init : ( Route, Address ) -> ( AppModel, Cmd Msg )
+init ( route, address ) =
+    ( newAppModel route address, Cmd.none )
