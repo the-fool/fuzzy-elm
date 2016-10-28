@@ -4,14 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --port 3000"
+    "start": "webpack-dev-server --host 0.0.0.0 --port 3000"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "ace-css": "^1.1.0",
     "css-loader": "^0.25.0",
-    "elm": "^0.17.1",
     "elm-webpack-loader": "^3.0.6",
     "file-loader": "^0.9.0",
     "font-awesome": "^4.7.0",

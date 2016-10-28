@@ -8,7 +8,7 @@ if [ $# -lt 1 ]; then
 fi
 
 function build {
-  docker build -t elm-fuzz .
+  docker-compose build
 }
 
 if [ "$1" == "build" ]; then
@@ -16,9 +16,9 @@ if [ "$1" == "build" ]; then
 fi
 
 if [ "$1" == "dev" ]; then
-  docker inspect elm-fuzz &> /dev/null
+  docker inspect the-fool/elm-fuzz &> /dev/null
   if [ $? -ne 0 ]; then
     build
   fi
-  docker run -v $(pwd):/app elm-fuzz:latest npm start
+  docker-compose up
 fi

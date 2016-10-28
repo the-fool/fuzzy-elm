@@ -8,4 +8,4 @@ import Messages exposing (Msg(..))
 view : AppModel -> Html Msg
 view model =
     div []
-        [ text "Hey, Fuzz" ]
+        [ text "Hey, Fuzzy Tools!" ]

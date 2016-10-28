@@ -1,0 +1,14 @@
+version: '2'
+
+services:
+  elm:
+    build: .
+    image: the-fool/elm-fuzz
+    container_name: elm-fuzz
+    command: npm start
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./src:/app/src
+      - ./node_modules:/app/node_modules
+      - ./elm-stuff:/app/elm-stuff
