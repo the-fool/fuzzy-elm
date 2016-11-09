@@ -1,21 +1,42 @@
 module View exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (class, id)
+import Html.Attributes exposing (class, id, style)
 import Models exposing (..)
 import Update exposing (Msg(..))
+
+
+layerSpacing : { vertical : Int, horizontal : Int }
+layerSpacing =
+    { vertical = 60
+    , horizontal = 100
+    }
 
 
 view : Model -> Html Msg
 view model =
     div [ class "main-wrapper" ]
-        [ network model.network ]
+        [ header
+        , network model.network
+        ]
+
+
+header : Html Msg
+header =
+    div
+        [ class "clearfix mb2 white bg-black"
+        ]
+        [ div
+            [ class "left p2" ]
+            [ text "Elm Brain" ]
+        ]
 
 
 network : Network -> Html Msg
 network layers =
     div
         [ class "network-wrapper"
+        , style [ ( "position", "relative" ), ( "top", px 80 ), ( "left", px 30 ) ]
         ]
         [ viewEntryLayer layers.entry
         , viewHiddenLayers layers.hidden
@@ -26,7 +47,7 @@ viewEntryLayer : Layer -> Html Msg
 viewEntryLayer inputs =
     div
         [ id "entry-layer" ]
-        (List.map viewNeuron inputs)
+        (List.indexedMap (viewNeuron 0) inputs)
 
 
 viewHiddenLayers : List Layer -> Html Msg
@@ -42,9 +63,34 @@ viewHiddenLayer column hiddenLayer =
         [ class "hidden-layer"
         , id ("hidden-" ++ (toString column))
         ]
-        (List.map viewNeuron hiddenLayer)
+        (List.indexedMap (viewNeuron (column + 1)) hiddenLayer)
 
 
-viewNeuron : Neuron -> Html Msg
-viewNeuron neuron =
-    text (toString neuron.id)
+viewNeuron : Int -> Int -> Neuron -> Html Msg
+viewNeuron x y neuron =
+    let
+        ( dx, dy ) =
+            ( x * layerSpacing.horizontal, y * layerSpacing.vertical )
+    in
+        div
+            [ class "absolute border rounded"
+            , style (List.concat [ square 40, position dx dy, [ ( "color", "blue" ) ] ])
+            ]
+            [ text (toString neuron.id)
+            , text (toString ( x, y ))
+            ]
+
+
+px : Int -> String
+px x =
+    (toString x) ++ "px"
+
+
+position : Int -> Int -> List ( String, String )
+position x y =
+    [ ( "left", (px x) ), ( "top", (px y) ) ]
+
+
+square : Int -> List ( String, String )
+square w =
+    [ ( "width", px w ), ( "height", px w ) ]
