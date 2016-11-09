@@ -1,19 +1,40 @@
 module Models exposing (..)
 
-import Hop.Types exposing (Address)
-import Routing exposing (Route)
 
-
-type alias AppModel =
-    { route : Route
-    , address : Address
-    , selectedInput : Maybe Int
+type alias Model =
+    { network : Network
     }
 
 
-newAppModel : Route -> Address -> AppModel
-newAppModel route address =
-    { selectedInput = Maybe.Nothing
-    , route = route
-    , address = address
+type alias Network =
+    { hidden : List Layer
+    , entry : Layer
+    }
+
+
+type alias Layer =
+    List Neuron
+
+
+type alias Neuron =
+    { id : Int
+    }
+
+
+emptyModel : Model
+emptyModel =
+    { network = initNetwork
+    }
+
+
+initNetwork : Network
+initNetwork =
+    { hidden = List.repeat 2 (List.map newNeuron [1..3])
+    , entry = [ newNeuron 0, newNeuron 1 ]
+    }
+
+
+newNeuron : Int -> Neuron
+newNeuron id =
+    { id = id
     }

@@ -1,56 +1,42 @@
-module Main exposing (..)
+port module Main exposing (..)
 
-{- vendor -}
-
-import Navigation
-import Hop
-import Hop.Types exposing (Address)
-import UrlParser
+import Html.App as App
 
 
 {- src -}
 
-import Models exposing (AppModel, newAppModel)
-import Routing exposing (..)
+import Models exposing (Model, emptyModel)
 import View exposing (view)
-import Messages exposing (Msg)
-import Update exposing (update)
+import Update exposing (update, Msg)
 
 
-main : Program Never
+main : Program (Maybe Model)
 main =
-    Navigation.program urlParser
+    App.programWithFlags
         { init = init
         , view = view
-        , update = update
-        , urlUpdate = urlUpdate
-        , subscriptions = (always Sub.none)
+        , update = updateWithStorage
+        , subscriptions = \_ -> Sub.none
         }
 
 
-urlUpdate : ( Route, Address ) -> AppModel -> ( AppModel, Cmd Msg )
-urlUpdate ( route, address ) model =
+port setStorage : Model -> Cmd msg
+
+
+{-| We want to `setStorage` on every update. This function adds the setStorage
+command for every step of the update function.
+-}
+updateWithStorage : Msg -> Model -> ( Model, Cmd Msg )
+updateWithStorage msg model =
     let
-        _ =
-            Debug.log "urlUpdate address" address
+        ( newModel, cmds ) =
+            update msg model
     in
-        ( { model | route = route, address = address }, Cmd.none )
+        ( newModel
+        , Cmd.batch [ setStorage newModel, cmds ]
+        )
 
 
-urlParser : Navigation.Parser ( Route, Address )
-urlParser =
-    let
-        parse path =
-            path
-                |> UrlParser.parse identity Routing.routes
-                |> Result.withDefault NotFoundRoute
-
-        matcher =
-            Hop.makeResolver Routing.config parse
-    in
-        Navigation.makeParser (.href >> matcher)
-
-
-init : ( Route, Address ) -> ( AppModel, Cmd Msg )
-init ( route, address ) =
-    ( newAppModel route address, Cmd.none )
+init : Maybe Model -> ( Model, Cmd Msg )
+init savedModel =
+    Maybe.withDefault emptyModel savedModel ! []

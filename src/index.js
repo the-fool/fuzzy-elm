@@ -9,5 +9,11 @@ require('./index.html');
 var Elm = require('./Main.elm');
 var mountNode = document.getElementById('main');
 
+var storedState = localStorage.getItem('elm-todo-save');
+var startingState = storedState ? JSON.parse(storedState) : null;
+var todomvc = Elm.Main.fullscreen(startingState);
+todomvc.ports.setStorage.subscribe(function(state) {
+    localStorage.setItem('elm-todo-save', JSON.stringify(state));
+});
 // The third value on embed are the initial values for incomming ports into Elm
-var app = Elm.Main.embed(mountNode);
+//var app = Elm.Main.embed(mountNode);
