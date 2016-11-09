@@ -74,7 +74,7 @@ viewNeuron x y neuron =
     in
         div
             [ class "absolute border rounded"
-            , style (List.concat [ square 60, position dx dy, [ ( "color", "green" ) ] ])
+            , style (List.concat [ square 60, position (dx, dy), [ ( "color", "green" ) ] ])
             ]
             [ text (toString neuron.id)
             , text (toString ( x, y ))
@@ -86,8 +86,8 @@ px x =
     (toString x) ++ "px"
 
 
-position : Int -> Int -> List ( String, String )
-position x y =
+position : (Int, Int) -> List ( String, String )
+position (x, y) =
     [ ( "left", (px x) ), ( "top", (px y) ) ]
 
 
