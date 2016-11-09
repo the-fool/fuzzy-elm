@@ -29,7 +29,7 @@ emptyModel =
 
 initNetwork : Network
 initNetwork =
-    { hidden = List.repeat 2 (List.map newNeuron [1..3])
+    { hidden = List.repeat 5 (List.map newNeuron [1..4])
     , entry = [ newNeuron 0, newNeuron 1 ]
     }
 

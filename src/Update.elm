@@ -16,7 +16,4 @@ update message model =
             model ! []
 
         AddNeuron ->
-            { model
-                | neurons = model.neurons ++ [ newNeuron 1 ]
-            }
-                ! []
+            model ! []

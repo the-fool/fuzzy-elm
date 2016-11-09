@@ -8,7 +8,7 @@ import Update exposing (Msg(..))
 
 layerSpacing : { vertical : Int, horizontal : Int }
 layerSpacing =
-    { vertical = 60
+    { vertical = 75
     , horizontal = 100
     }
 
@@ -74,7 +74,7 @@ viewNeuron x y neuron =
     in
         div
             [ class "absolute border rounded"
-            , style (List.concat [ square 40, position dx dy, [ ( "color", "blue" ) ] ])
+            , style (List.concat [ square 60, position dx dy, [ ( "color", "green" ) ] ])
             ]
             [ text (toString neuron.id)
             , text (toString ( x, y ))
