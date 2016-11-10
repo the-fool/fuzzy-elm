@@ -1,15 +1,26 @@
 module View exposing (..)
 
 import Html exposing (..)
+import Html.Events exposing (onClick)
 import Html.Attributes exposing (class, id, style)
 import Models exposing (..)
 import Update exposing (Msg(..))
 
 
-layerSpacing : { vertical : Int, horizontal : Int }
-layerSpacing =
+type alias Geometry =
+    { vertical : Int
+    , horizontal : Int
+    , boxSize : Int
+    , totalWidth : Int
+    }
+
+
+networkGeometry : Geometry
+networkGeometry =
     { vertical = 75
     , horizontal = 100
+    , boxSize = 60
+    , totalWidth = 800
     }
 
 
@@ -28,19 +39,61 @@ header =
         ]
         [ div
             [ class "left p2" ]
-            [ text "Elm Brain" ]
+            [ Html.text "Elm Brain" ]
         ]
 
 
 network : Network -> Html Msg
 network layers =
     div
-        [ class "network-wrapper"
-        , style [ ( "position", "relative" ), ( "top", px 80 ), ( "left", px 30 ) ]
+        [ class "network-wrapper relative"
+        , style [ ( "top", px 80 ), ( "left", "15%" ), ( "width", px networkGeometry.totalWidth ) ]
         ]
-        [ viewEntryLayer layers.entry
-        , viewHiddenLayers layers.hidden
+        [ viewLayerEditor layers.hidden
+        , div
+            [ class "nodes-wrapper relative"
+            , style [ ( "margin-top", px 30 ) ]
+            ]
+            [ viewEntryLayer layers.entry
+            , viewHiddenLayers layers.hidden
+            ]
         ]
+
+
+viewLayerEditor : List Layer -> Html Msg
+viewLayerEditor layers =
+    div
+        [ class "layer-editor-wrapper"
+        , style [ ( "margin-left", px networkGeometry.horizontal ) ]
+        ]
+        [ viewModLayers layers
+        , viewModNeurons layers
+        ]
+
+
+viewModLayers : List Layer -> Html Msg
+viewModLayers layers =
+    div
+        [ style [ ( "text-align", "center" ) ]
+        ]
+        [ button
+            [ class "btn regular"
+            , onClick (AddLayer)
+            ]
+            [ i [ class "fa fa-plus mr1" ] [] ]
+        , button
+            [ class "btn regular"
+            , onClick (RemoveLayer)
+            ]
+            [ i [ class "fa fa-minus mr1" ] [] ]
+        ]
+
+
+viewModNeurons : List Layer -> Html Msg
+viewModNeurons layers =
+    div
+        []
+        []
 
 
 viewEntryLayer : Layer -> Html Msg
@@ -52,32 +105,34 @@ viewEntryLayer inputs =
 
 viewHiddenLayers : List Layer -> Html Msg
 viewHiddenLayers hiddenLayers =
-    div
-        [ id "hidden-layers" ]
-        (List.indexedMap viewHiddenLayer hiddenLayers)
+    let
+        viewHiddenLayer columnIndex hiddenLayer =
+            div
+                [ class "hidden-layer"
+                , id ("hidden-" ++ (toString columnIndex))
+                ]
+                (List.indexedMap (spacedNeuron columnIndex) hiddenLayer)
 
-
-viewHiddenLayer : Int -> Layer -> Html Msg
-viewHiddenLayer column hiddenLayer =
-    div
-        [ class "hidden-layer"
-        , id ("hidden-" ++ (toString column))
-        ]
-        (List.indexedMap (viewNeuron (column + 1)) hiddenLayer)
+        spacedNeuron columnIndex =
+            viewNeuron ((columnIndex + 1) * networkGeometry.totalWidth // List.length hiddenLayers)
+    in
+        div
+            [ id "hidden-layers" ]
+            (List.indexedMap viewHiddenLayer hiddenLayers)
 
 
 viewNeuron : Int -> Int -> Neuron -> Html Msg
 viewNeuron x y neuron =
     let
         ( dx, dy ) =
-            ( x * layerSpacing.horizontal, y * layerSpacing.vertical )
+            ( x, y * networkGeometry.vertical )
     in
         div
             [ class "absolute border rounded"
-            , style (List.concat [ square 60, position (dx, dy), [ ( "color", "green" ) ] ])
+            , style (List.concat [ square networkGeometry.boxSize, position ( dx, dy ), [ ( "color", "green" ) ] ])
             ]
-            [ text (toString neuron.id)
-            , text (toString ( x, y ))
+            [ Html.text (toString neuron.id)
+            , Html.text (toString ( x, y ))
             ]
 
 
@@ -86,8 +141,8 @@ px x =
     (toString x) ++ "px"
 
 
-position : (Int, Int) -> List ( String, String )
-position (x, y) =
+position : ( Int, Int ) -> List ( String, String )
+position ( x, y ) =
     [ ( "left", (px x) ), ( "top", (px y) ) ]
 
 
