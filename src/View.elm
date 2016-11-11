@@ -19,8 +19,8 @@ geometry : Geometry
 geometry =
     { vertical = 75
     , horizontal = 100
-    , boxSize = 60
-    , totalWidth = 800
+    , boxSize = 45
+    , totalWidth = 700
     }
 
 
@@ -47,7 +47,7 @@ network : Network -> Html Msg
 network layers =
     div
         [ class "network-wrapper relative"
-        , style [ ( "top", px 80 ), ( "left", "15%" ), ( "width", px geometry.totalWidth ) ]
+        , style [ ( "top", px 80 ), ( "left", "15%" ), ( "width", px <| geometry.totalWidth + 20 ) ]
         ]
         [ viewLayerEditor layers.hidden
         , div
@@ -111,13 +111,20 @@ viewModNeurons layers =
             "btn circle" |> class
 
         buttonStyle =
-            [ ( "padding", "0px" ) ] |> style
+            List.concat
+                [ square 20
+                , [ ( "padding", px 0 )
+                  , ( "margin-left", px 7 )
+                  , ( "background-color", "grey" )
+                  ]
+                ]
+                |> style
 
         numLayers =
             List.length layers
 
         spacer x =
-            (gutter numLayers x) - geometry.boxSize
+            (gutter numLayers x) - geometry.boxSize - 5
 
         layerControls x =
             div
@@ -126,15 +133,15 @@ viewModNeurons layers =
                 [ button
                     [ buttonClass
                     , buttonStyle
-                    , onClick (AddNeuron x)
+                    , onClick (AddNeuron <| x - 1)
                     ]
-                    [ i [ class "fa fa-plus mr1" ] [] ]
+                    [ i [ class "fa fa-plus", style [ ( "padding-top", px 1 ) ] ] [] ]
                 , button
                     [ buttonClass
                     , buttonStyle
-                    , onClick (RemoveNeuron x)
+                    , onClick (RemoveNeuron <| x - 1)
                     ]
-                    [ i [ class "fa fa-minus mr1" ] [] ]
+                    [ i [ class "fa fa-minus", style [ ( "padding-top", px 1 ) ] ] [] ]
                 ]
     in
         div

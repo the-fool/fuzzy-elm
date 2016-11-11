@@ -3,6 +3,7 @@ module Update exposing (..)
 import Debug
 import Models exposing (Model, Layer, Network, newNeuron)
 import Monocle.Lens exposing (..)
+import Array
 
 
 type alias Column =
@@ -52,10 +53,38 @@ update message model =
             model ! []
 
         AddNeuron column ->
-            model ! []
+            let
+                oldHiddenLayers =
+                    modelHiddenLayerLens.get model
+
+                newHiddenLayers =
+                    List.indexedMap
+                        (\i layer ->
+                            if i == column && (List.length layer) < 8 then
+                                layer ++ [ newNeuron 3 ]
+                            else
+                                layer
+                        )
+                        oldHiddenLayers
+            in
+                modelHiddenLayerLens.set newHiddenLayers model ! []
 
         RemoveNeuron column ->
-            model ! []
+            let
+                oldHiddenLayers =
+                    modelHiddenLayerLens.get model
+
+                newHiddenLayers =
+                    List.indexedMap
+                        (\i layer ->
+                            if i == column && (List.length layer) /= 1 then
+                                List.drop 1 layer
+                            else
+                                layer
+                        )
+                        oldHiddenLayers
+            in
+                modelHiddenLayerLens.set newHiddenLayers model ! []
 
         AddLayer ->
             let
