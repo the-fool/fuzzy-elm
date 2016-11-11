@@ -7,7 +7,9 @@ import Html.App as App
 
 import Models exposing (Model, emptyModel)
 import View exposing (view)
-import Update exposing (update, Msg)
+import Update exposing (update, Msg(..))
+import Window
+import Task
 
 
 main : Program (Maybe Model)
@@ -16,7 +18,7 @@ main =
         { init = init
         , view = view
         , update = updateWithStorage
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = \_ -> Window.resizes decodeWindowSize
         }
 
 
@@ -37,6 +39,11 @@ updateWithStorage msg model =
         )
 
 
+decodeWindowSize : Window.Size -> Msg
+decodeWindowSize size =
+    WindowResize ( size.width, size.height )
+
+
 init : Maybe Model -> ( Model, Cmd Msg )
 init savedModel =
-    Maybe.withDefault emptyModel savedModel ! []
+    ( Maybe.withDefault emptyModel savedModel, Task.perform (always NoOp) decodeWindowSize Window.size )

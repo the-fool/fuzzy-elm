@@ -39,7 +39,7 @@ view model =
     in
         div [ class "main-wrapper" ]
             [ header
-            , div [ class "ui-wrapper clearfix" ]
+            , div [ class "ui-wrapper clearfix m3" ]
                 [ column 2 dataSets
                 , column 6 <| network model.network
                 , column 4 <| output model
@@ -70,14 +70,6 @@ dataSets =
             [ largeChart 100 data ]
 
 
-output : Model -> Html Msg
-output model =
-    div
-        []
-        [ h1 [] [ text "hey there" ]
-        ]
-
-
 network : Network -> Html Msg
 network layers =
     div
@@ -91,6 +83,14 @@ network layers =
             [ viewEntryLayer layers.entry
             , viewHiddenLayers layers.hidden
             ]
+        ]
+
+
+output : Model -> Html Msg
+output model =
+    div
+        []
+        [ h1 [] [ text "hey there" ]
         ]
 
 

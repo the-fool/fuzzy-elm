@@ -3,7 +3,6 @@ module Update exposing (..)
 import Debug
 import Models exposing (Model, Layer, Network, newNeuron)
 import Monocle.Lens exposing (..)
-import Array
 
 
 type alias Column =
@@ -16,6 +15,7 @@ type Msg
     | RemoveNeuron Column
     | AddLayer
     | RemoveLayer
+    | WindowResize ( Int, Int )
 
 
 modelHiddenLayerLens : Lens Model (List Layer)
@@ -50,6 +50,9 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case Debug.log "msg" message of
         NoOp ->
+            model ! []
+
+        WindowResize ( width, height ) ->
             model ! []
 
         AddNeuron column ->
