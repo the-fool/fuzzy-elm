@@ -12,6 +12,7 @@ type alias Column =
 type Msg
     = NoOp
     | AddNeuron Column
+    | RemoveNeuron Column
     | AddLayer
     | RemoveLayer
 
@@ -51,6 +52,9 @@ update message model =
             model ! []
 
         AddNeuron column ->
+            model ! []
+
+        RemoveNeuron column ->
             model ! []
 
         AddLayer ->

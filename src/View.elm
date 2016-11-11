@@ -15,8 +15,8 @@ type alias Geometry =
     }
 
 
-networkGeometry : Geometry
-networkGeometry =
+geometry : Geometry
+geometry =
     { vertical = 75
     , horizontal = 100
     , boxSize = 60
@@ -47,7 +47,7 @@ network : Network -> Html Msg
 network layers =
     div
         [ class "network-wrapper relative"
-        , style [ ( "top", px 80 ), ( "left", "15%" ), ( "width", px networkGeometry.totalWidth ) ]
+        , style [ ( "top", px 80 ), ( "left", "15%" ), ( "width", px geometry.totalWidth ) ]
         ]
         [ viewLayerEditor layers.hidden
         , div
@@ -60,21 +60,35 @@ network layers =
         ]
 
 
+gutter : Int -> Int -> Int
+gutter nlayers factor =
+    ((geometry.totalWidth - geometry.boxSize) // nlayers) * factor
+
+
 viewLayerEditor : List Layer -> Html Msg
 viewLayerEditor layers =
-    div
-        [ class "layer-editor-wrapper"
-        , style [ ( "margin-left", px networkGeometry.horizontal ) ]
-        ]
-        [ viewModLayers layers
-        , viewModNeurons layers
-        ]
+    let
+        leftMargin =
+            geometry.boxSize
+                |> px
+
+        editorStyle =
+            [ ( "margin-left", leftMargin ) ]
+                |> style
+    in
+        div
+            [ class "layer-editor-wrapper"
+            , editorStyle
+            ]
+            [ viewModLayers layers
+            , viewModNeurons layers
+            ]
 
 
 viewModLayers : List Layer -> Html Msg
 viewModLayers layers =
     div
-        [ style [ ( "text-align", "center" ) ]
+        [ style [ ( "display", "flex" ), ( "justify-content", "center" ) ]
         ]
         [ button
             [ class "btn regular"
@@ -86,14 +100,46 @@ viewModLayers layers =
             , onClick (RemoveLayer)
             ]
             [ i [ class "fa fa-minus mr1" ] [] ]
+        , p [ class "regular" ] [ text (toString (List.length layers) ++ " HIDDEN LAYERS") ]
         ]
 
 
 viewModNeurons : List Layer -> Html Msg
 viewModNeurons layers =
-    div
-        []
-        []
+    let
+        buttonClass =
+            "btn circle" |> class
+
+        buttonStyle =
+            [ ( "padding", "0px" ) ] |> style
+
+        numLayers =
+            List.length layers
+
+        spacer x =
+            (gutter numLayers x) - geometry.boxSize
+
+        layerControls x =
+            div
+                [ style (List.concat [ [ ( "position", "absolute" ) ], position ( spacer x, 0 ) ])
+                ]
+                [ button
+                    [ buttonClass
+                    , buttonStyle
+                    , onClick (AddNeuron x)
+                    ]
+                    [ i [ class "fa fa-plus mr1" ] [] ]
+                , button
+                    [ buttonClass
+                    , buttonStyle
+                    , onClick (RemoveNeuron x)
+                    ]
+                    [ i [ class "fa fa-minus mr1" ] [] ]
+                ]
+    in
+        div
+            [ style [ ( "position", "relative" ) ] ]
+            (List.map layerControls [1..(numLayers)])
 
 
 viewEntryLayer : Layer -> Html Msg
@@ -106,6 +152,9 @@ viewEntryLayer inputs =
 viewHiddenLayers : List Layer -> Html Msg
 viewHiddenLayers hiddenLayers =
     let
+        numLayers =
+            List.length hiddenLayers
+
         viewHiddenLayer columnIndex hiddenLayer =
             div
                 [ class "hidden-layer"
@@ -114,7 +163,7 @@ viewHiddenLayers hiddenLayers =
                 (List.indexedMap (spacedNeuron columnIndex) hiddenLayer)
 
         spacedNeuron columnIndex =
-            viewNeuron ((columnIndex + 1) * networkGeometry.totalWidth // List.length hiddenLayers)
+            viewNeuron (gutter numLayers (columnIndex + 1))
     in
         div
             [ id "hidden-layers" ]
@@ -125,11 +174,11 @@ viewNeuron : Int -> Int -> Neuron -> Html Msg
 viewNeuron x y neuron =
     let
         ( dx, dy ) =
-            ( x, y * networkGeometry.vertical )
+            ( x, y * geometry.vertical )
     in
         div
             [ class "absolute border rounded"
-            , style (List.concat [ square networkGeometry.boxSize, position ( dx, dy ), [ ( "color", "green" ) ] ])
+            , style (List.concat [ square geometry.boxSize, position ( dx, dy ), [ ( "color", "green" ) ] ])
             ]
             [ Html.text (toString neuron.id)
             , Html.text (toString ( x, y ))
