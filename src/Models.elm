@@ -1,6 +1,13 @@
 module Models exposing (..)
 
 
+colors : { positive : String, negative : String }
+colors =
+    { negative = "rgb(245, 147, 34)"
+    , positive = "rgb(8, 119, 189)"
+    }
+
+
 type alias Model =
     { network : Network
     }

@@ -5,6 +5,8 @@ import Html.Events exposing (onClick)
 import Html.Attributes exposing (class, id, style)
 import Models exposing (..)
 import Update exposing (Msg(..))
+import SvgViews exposing (largeChart)
+import SvgViews exposing (randomPairs)
 
 
 type alias Geometry =
@@ -12,6 +14,7 @@ type alias Geometry =
     , horizontal : Int
     , boxSize : Int
     , totalWidth : Int
+    , padding : Int
     }
 
 
@@ -21,15 +24,27 @@ geometry =
     , horizontal = 100
     , boxSize = 45
     , totalWidth = 700
+    , padding = 20
     }
 
 
 view : Model -> Html Msg
 view model =
-    div [ class "main-wrapper" ]
-        [ header
-        , network model.network
-        ]
+    let
+        col =
+            toString >> (++) "col col-"
+
+        column sz node =
+            div [ class <| col sz ] [ node ]
+    in
+        div [ class "main-wrapper" ]
+            [ header
+            , div [ class "ui-wrapper clearfix" ]
+                [ column 2 dataSets
+                , column 6 <| network model.network
+                , column 4 <| output model
+                ]
+            ]
 
 
 header : Html Msg
@@ -43,11 +58,30 @@ header =
         ]
 
 
+dataSets : Html Msg
+dataSets =
+    let
+        data =
+            List.map (\( x, y ) -> ( x, y, 1 )) <| randomPairs 100
+    in
+        div
+            [ class "datasets-wrapper"
+            ]
+            [ largeChart 100 data ]
+
+
+output : Model -> Html Msg
+output model =
+    div
+        []
+        [ h1 [] [ text "hey there" ]
+        ]
+
+
 network : Network -> Html Msg
 network layers =
     div
-        [ class "network-wrapper relative"
-        , style [ ( "top", px 80 ), ( "left", "15%" ), ( "width", px <| geometry.totalWidth + 20 ) ]
+        [ class "network-wrapper"
         ]
         [ viewLayerEditor layers.hidden
         , div
