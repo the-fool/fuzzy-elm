@@ -8,10 +8,11 @@ import Update exposing (Msg(..))
 selectXor : Float -> Msg
 selectXor val =
     let
+        {--TODO: figure out a more elegant way to keep introducing new seeds --}
         seeder =
             toFloat Random.maxInt / val |> truncate
     in
-        SelectInput <| xorData seeder ( -5, 5 )
+        SelectInput <| xorData seeder ( -4, 4 )
 
 
 xorData : Int -> ( Float, Float ) -> List Point
@@ -24,7 +25,7 @@ xorData seeder ( min, max ) =
                 ( x, y, -1 )
 
         padding =
-            0.03 * (max - min)
+            0.04 * (max - min)
 
         pad i =
             if i > 0 then
@@ -32,14 +33,9 @@ xorData seeder ( min, max ) =
             else
                 i - padding
     in
-        randomPairs seeder ( min, max ) 100
+        randomPairs seeder ( min, max ) 200
             |> List.map (\( x, y ) -> ( pad x, pad y ))
             |> List.map label
-
-
-seed0 : Random.Seed
-seed0 =
-    Random.initialSeed 628318530 |> Random.step Random.independentSeed |> snd
 
 
 randomPairs : Int -> ( Float, Float ) -> Int -> List ( Float, Float )

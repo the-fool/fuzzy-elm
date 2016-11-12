@@ -1,7 +1,8 @@
 module Update exposing (..)
 
 import Debug
-import Models exposing (Model, Point, Layer, Network, newNeuron)
+import Models exposing (Model, Point)
+import Network exposing (..)
 import Monocle.Lens exposing (..)
 
 
@@ -68,7 +69,7 @@ update message model =
                     List.indexedMap
                         (\i layer ->
                             if i == column && (List.length layer) < 8 then
-                                layer ++ [ newNeuron 3 ]
+                                layer ++ [ newNeuron ]
                             else
                                 layer
                         )
@@ -99,7 +100,7 @@ update message model =
                     if List.length model.network.hidden > 5 then
                         modelHiddenLayerLens.get model
                     else
-                        (modelHiddenLayerLens.get model) ++ [ [ newNeuron 3 ] ]
+                        (modelHiddenLayerLens.get model) ++ [ [ newNeuron ] ]
             in
                 modelHiddenLayerLens.set newHidden model ! []
 

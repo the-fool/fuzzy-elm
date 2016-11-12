@@ -4,10 +4,10 @@ import Html exposing (..)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (class, id, style)
 import Models exposing (..)
+import Network exposing (..)
 import Update exposing (Msg(..))
 import SvgViews exposing (largeChart)
 import Datasets exposing (selectXor)
-import Random.Pcg as Random
 
 
 type alias Geometry =
@@ -128,8 +128,7 @@ output : Model -> Html Msg
 output model =
     div
         [ class "ml2" ]
-        [ h1 [] [ text "hey there" ]
-        ]
+        [ largeChart 300 model.inputs ]
 
 
 viewModLayers : List Layer -> Html Msg
@@ -232,7 +231,7 @@ viewNeuron x y neuron =
             [ class "absolute border rounded"
             , style (List.concat [ square geometry.boxSize, position ( dx, dy ), [ ( "color", "green" ) ] ])
             ]
-            [ Html.text (toString neuron.id)
+            [ Html.text (toString neuron)
             , Html.text (toString ( x, y ))
             ]
 
