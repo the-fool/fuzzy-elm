@@ -7,8 +7,8 @@ import Array exposing (..)
 
 
 activations : String -> Float -> Float
-activations str =
-    case str of
+activations k =
+    case k of
         "sigmoid" ->
             sigmoid
 
@@ -16,9 +16,23 @@ activations str =
             sigmoid
 
 
+entryNeuronTypes : String -> ( Float, Float ) -> Float
+entryNeuronTypes k =
+    case k of
+        "x" ->
+            \( x, y ) -> x
+
+        "y" ->
+            \( x, y ) -> y
+
+        _ ->
+            \( x, y ) -> x
+
+
 type alias Network =
     { layers : List Layer
     , activation : String
+    , entryNeurons : List String
     }
 
 
@@ -90,4 +104,4 @@ networkFactory layerDims =
         allLayers =
             [ entryLayer ] ++ hiddenLayers
     in
-        { layers = allLayers, activation = "sigmoid" }
+        { layers = allLayers, activation = "sigmoid", entryNeurons = [ "x", "y" ] }
