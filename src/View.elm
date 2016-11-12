@@ -11,38 +11,57 @@ import SvgViews exposing (randomPairs)
 
 type alias Geometry =
     { vertical : Int
-    , horizontal : Int
     , boxSize : Int
     , totalWidth : Int
     , padding : Int
+    , datasetsPcnt : Float
+    , networkPcnt : Float
     }
 
 
 geometry : Geometry
 geometry =
     { vertical = 75
-    , horizontal = 100
     , boxSize = 45
     , totalWidth = 700
     , padding = 20
+    , datasetsPcnt = 0.1
+    , networkPcnt = 0.6
     }
+
+
+wrapperWidth : Int -> Int
+wrapperWidth x =
+    if x >= 1400 then
+        1300
+    else if x >= 1100 then
+        1000
+    else
+        900
 
 
 view : Model -> Html Msg
 view model =
     let
-        col =
-            toString >> (++) "col col-"
+        maxWidth =
+            fst model.window |> wrapperWidth
+
+        factor x =
+            maxWidth |> toFloat |> (*) x |> truncate
 
         column sz node =
-            div [ class <| col sz ] [ node ]
+            div [ class "col", style [ ( "width", factor sz |> px ) ] ] [ node ]
+
+        ( datasetsWidth, networkWidth, outputWidth ) =
+            ( geometry.datasetsPcnt, geometry.networkPcnt, (1 - (geometry.datasetsPcnt + geometry.networkPcnt)) )
     in
-        div [ class "main-wrapper" ]
+        div
+            [ class "main-wrapper" ]
             [ header
-            , div [ class "ui-wrapper clearfix m3" ]
-                [ column 2 dataSets
-                , column 6 <| network model.network
-                , column 4 <| output model
+            , div [ class "ui-wrapper clearfix mx-auto", style [ ( "width", px maxWidth ) ] ]
+                [ column datasetsWidth dataSets
+                , column networkWidth <| network (factor networkWidth) model
+                , column outputWidth <| output model
                 ]
             ]
 
@@ -70,53 +89,40 @@ dataSets =
             [ largeChart 100 data ]
 
 
-network : Network -> Html Msg
-network layers =
-    div
-        [ class "network-wrapper"
-        ]
-        [ viewLayerEditor layers.hidden
-        , div
-            [ class "nodes-wrapper relative"
-            , style [ ( "margin-top", px 30 ) ]
+network : Int -> Model -> Html Msg
+network networkWidth model =
+    let
+        network =
+            model.network
+
+        gutter =
+            (*) <| (networkWidth - geometry.boxSize - 20) // (List.length network.hidden)
+    in
+        div
+            [ class "network-wrapper" ]
+            [ div
+                [ class "layer-editor-wrapper"
+                , style [ ( "margin-left", px geometry.boxSize ) ]
+                ]
+                [ viewModLayers network.hidden
+                , viewModNeurons gutter network.hidden
+                ]
+            , div
+                [ class "nodes-wrapper relative"
+                , style [ ( "margin-top", px 30 ) ]
+                ]
+                [ viewEntryLayer network.entry
+                , viewHiddenLayers gutter network.hidden
+                ]
             ]
-            [ viewEntryLayer layers.entry
-            , viewHiddenLayers layers.hidden
-            ]
-        ]
 
 
 output : Model -> Html Msg
 output model =
     div
-        []
+        [ class "ml2" ]
         [ h1 [] [ text "hey there" ]
         ]
-
-
-gutter : Int -> Int -> Int
-gutter nlayers factor =
-    ((geometry.totalWidth - geometry.boxSize) // nlayers) * factor
-
-
-viewLayerEditor : List Layer -> Html Msg
-viewLayerEditor layers =
-    let
-        leftMargin =
-            geometry.boxSize
-                |> px
-
-        editorStyle =
-            [ ( "margin-left", leftMargin ) ]
-                |> style
-    in
-        div
-            [ class "layer-editor-wrapper"
-            , editorStyle
-            ]
-            [ viewModLayers layers
-            , viewModNeurons layers
-            ]
 
 
 viewModLayers : List Layer -> Html Msg
@@ -138,8 +144,8 @@ viewModLayers layers =
         ]
 
 
-viewModNeurons : List Layer -> Html Msg
-viewModNeurons layers =
+viewModNeurons : (Int -> Int) -> List Layer -> Html Msg
+viewModNeurons gutter layers =
     let
         buttonClass =
             "btn circle" |> class
@@ -158,7 +164,7 @@ viewModNeurons layers =
             List.length layers
 
         spacer x =
-            (gutter numLayers x) - geometry.boxSize - 5
+            (gutter x) - geometry.boxSize - 5
 
         layerControls x =
             div
@@ -190,8 +196,8 @@ viewEntryLayer inputs =
         (List.indexedMap (viewNeuron 0) inputs)
 
 
-viewHiddenLayers : List Layer -> Html Msg
-viewHiddenLayers hiddenLayers =
+viewHiddenLayers : (Int -> Int) -> List Layer -> Html Msg
+viewHiddenLayers gutter hiddenLayers =
     let
         numLayers =
             List.length hiddenLayers
@@ -204,7 +210,7 @@ viewHiddenLayers hiddenLayers =
                 (List.indexedMap (spacedNeuron columnIndex) hiddenLayer)
 
         spacedNeuron columnIndex =
-            viewNeuron (gutter numLayers (columnIndex + 1))
+            viewNeuron (gutter (columnIndex + 1))
     in
         div
             [ id "hidden-layers" ]

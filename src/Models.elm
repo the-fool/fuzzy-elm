@@ -10,6 +10,7 @@ colors =
 
 type alias Model =
     { network : Network
+    , window : ( Int, Int )
     }
 
 
@@ -31,6 +32,7 @@ type alias Neuron =
 emptyModel : Model
 emptyModel =
     { network = initNetwork
+    , window = ( 1, 1 )
     }
 
 

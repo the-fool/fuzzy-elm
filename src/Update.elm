@@ -1,5 +1,6 @@
 module Update exposing (..)
 
+import Window
 import Debug
 import Models exposing (Model, Layer, Network, newNeuron)
 import Monocle.Lens exposing (..)
@@ -53,7 +54,7 @@ update message model =
             model ! []
 
         WindowResize ( width, height ) ->
-            model ! []
+            { model | window = ( width, height ) } ! []
 
         AddNeuron column ->
             let
