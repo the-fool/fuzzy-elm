@@ -6,7 +6,7 @@ import Html.Attributes exposing (class, id, style)
 import Models exposing (..)
 import Update exposing (Msg(..))
 import SvgViews exposing (largeChart)
-import SvgViews exposing (randomPairs)
+import Datasets exposing (selectXor)
 
 
 type alias Geometry =
@@ -76,11 +76,11 @@ header =
 dataSets : Html Msg
 dataSets =
     let
-        dataSelector name =
-            div [ onClick (SelectInput [ ( 0.3, 0.6, 1 ) ]) ] [ text name ]
+        dataSelector config =
+            div [ onClick <| snd config ] [ text <| fst config ]
 
         dataOptions =
-            [ "XOR", "GAUSSIAN" ]
+            [ ( "XOR", selectXor ), ( "GAUSSIAN", selectXor ) ]
     in
         div
             [ class "datasets-wrapper" ]

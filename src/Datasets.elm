@@ -2,6 +2,12 @@ module Datasets exposing (..)
 
 import Random.Pcg as Random
 import Models exposing (Point)
+import Update exposing (Msg(..))
+
+
+selectXor : Msg
+selectXor =
+    SelectInput <| xorData ( -5, 5 )
 
 
 xorData : ( Float, Float ) -> List Point
