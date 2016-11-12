@@ -12,8 +12,6 @@ import SvgViews exposing (randomPairs)
 type alias Geometry =
     { vertical : Int
     , boxSize : Int
-    , totalWidth : Int
-    , padding : Int
     , datasetsPcnt : Float
     , networkPcnt : Float
     }
@@ -23,8 +21,6 @@ geometry : Geometry
 geometry =
     { vertical = 75
     , boxSize = 45
-    , totalWidth = 700
-    , padding = 20
     , datasetsPcnt = 0.1
     , networkPcnt = 0.6
     }
@@ -160,6 +156,14 @@ viewModNeurons gutter layers =
                 ]
                 |> style
 
+        buttonFaMsg faClass msg =
+            button
+                [ buttonClass
+                , buttonStyle
+                , onClick msg
+                ]
+                [ i [ class <| "fa " ++ faClass, style [ ( "padding-top", px 1 ) ] ] [] ]
+
         numLayers =
             List.length layers
 
@@ -170,18 +174,8 @@ viewModNeurons gutter layers =
             div
                 [ style (List.concat [ [ ( "position", "absolute" ) ], position ( spacer x, 0 ) ])
                 ]
-                [ button
-                    [ buttonClass
-                    , buttonStyle
-                    , onClick (AddNeuron <| x - 1)
-                    ]
-                    [ i [ class "fa fa-plus", style [ ( "padding-top", px 1 ) ] ] [] ]
-                , button
-                    [ buttonClass
-                    , buttonStyle
-                    , onClick (RemoveNeuron <| x - 1)
-                    ]
-                    [ i [ class "fa fa-minus", style [ ( "padding-top", px 1 ) ] ] [] ]
+                [ buttonFaMsg "fa-plus" (AddNeuron (x - 1))
+                , buttonFaMsg "fa-minus" (RemoveNeuron (x - 1))
                 ]
     in
         div

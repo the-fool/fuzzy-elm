@@ -11,7 +11,12 @@ colors =
 type alias Model =
     { network : Network
     , window : ( Int, Int )
+    , inputs : List Point
     }
+
+
+type alias Point =
+    ( Int, Int, Int )
 
 
 type alias Network =
@@ -33,6 +38,7 @@ emptyModel : Model
 emptyModel =
     { network = initNetwork
     , window = ( 1, 1 )
+    , inputs = []
     }
 
 
