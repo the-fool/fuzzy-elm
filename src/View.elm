@@ -40,6 +40,9 @@ wrapperWidth x =
 view : Model -> Html Msg
 view model =
     let
+        nonOutputLayers =
+            List.take (List.length model.network.layers - 1) model.network.layers
+
         maxWidth =
             fst model.window |> wrapperWidth
 
@@ -57,7 +60,7 @@ view model =
             [ header
             , div [ class "ui-wrapper clearfix mx-auto", style [ ( "width", px maxWidth ) ] ]
                 [ column datasetsWidth <| dataSets model
-                , column networkWidth <| network (factor networkWidth) model
+                , column networkWidth <| network (factor networkWidth) nonOutputLayers
                 , column outputWidth <| output model
                 ]
             ]
@@ -96,11 +99,11 @@ dataSets model =
             (List.map dataSelector dataOptions)
 
 
-network : Int -> Model -> Html Msg
-network networkWidth model =
+network : Int -> List Layer -> Html Msg
+network networkWidth layers =
     let
         entry =
-            case List.head model.network.layers of
+            case List.head layers of
                 Just entryLayer ->
                     entryLayer
 
@@ -108,7 +111,7 @@ network networkWidth model =
                     [ [] ]
 
         hidden =
-            List.drop 1 model.network.layers
+            List.drop 1 layers
 
         gutter =
             (*) <| (networkWidth - geometry.boxSize - 20) // (List.length hidden)

@@ -23,7 +23,7 @@ type alias Point =
 
 emptyModel : Model
 emptyModel =
-    { network = networkFactory [ 2, 3, 4, 3 ]
+    { network = networkFactory [ 2, 3, 4, 3, 1 ]
     , window = ( 1, 1 )
     , inputs = [ ( 0, 0, 0 ) ]
     }

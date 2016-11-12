@@ -22,10 +22,10 @@ type Msg
 alterLayer : (Int -> Bool) -> (Int -> Int) -> Int -> Network -> Network
 alterLayer predicate action layerIndex oldNetwork =
     let
-        oldDims =
-            List.map List.length oldNetwork.layers
+        oldShape =
+            Network.getShape oldNetwork
 
-        newDims =
+        newShape =
             List.indexedMap
                 (\i neuronCount ->
                     if i == layerIndex && predicate neuronCount then
@@ -33,9 +33,9 @@ alterLayer predicate action layerIndex oldNetwork =
                     else
                         neuronCount
                 )
-                oldDims
+                oldShape
     in
-        networkFactory newDims
+        networkFactory newShape
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -72,26 +72,26 @@ update message model =
 
         AddLayer ->
             let
-                oldDims =
-                    List.map List.length model.network.layers
+                oldShape =
+                    Network.getShape model.network
 
-                newDims =
-                    if List.length oldDims > 5 then
-                        oldDims
+                newShape =
+                    if List.length oldShape > 5 then
+                        oldShape
                     else
-                        oldDims ++ [ 1 ]
+                        oldShape ++ [ 1 ]
             in
-                { model | network = networkFactory newDims } ! []
+                { model | network = networkFactory newShape } ! []
 
         RemoveLayer ->
             let
-                oldDims =
-                    List.map List.length model.network.layers
+                oldShape =
+                    Network.getShape model.network
 
-                newDims =
-                    if List.length oldDims == 1 then
-                        oldDims
+                newShape =
+                    if List.length oldShape == 1 then
+                        oldShape
                     else
-                        List.take (List.length oldDims - 1) oldDims
+                        List.take (List.length oldShape - 1) oldShape
             in
-                { model | network = networkFactory newDims } ! []
+                { model | network = networkFactory newShape } ! []

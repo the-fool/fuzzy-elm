@@ -3,8 +3,23 @@ module Network exposing (..)
 import Array exposing (..)
 
 
+{--In order to serialize to localStorage, activation function must be stored as a string --}
+
+
+activations : String -> Float -> Float
+activations str =
+    case str of
+        "sigmoid" ->
+            sigmoid
+
+        _ ->
+            sigmoid
+
+
 type alias Network =
-    { layers : List Layer }
+    { layers : List Layer
+    , activation : String
+    }
 
 
 type alias Layer =
@@ -15,11 +30,34 @@ type alias Neuron =
     List Float
 
 
+getShape : Network -> List Int
+getShape network =
+    let
+        nonOutput =
+            List.take (List.length network.layers - 1) network.layers
+    in
+        List.map List.length nonOutput
+
+
+
+{--Returns a matrix representing the output of every node in the network --}
+
+
+forwardProp : ( Float, Float ) -> Network -> List (List Float)
+forwardProp input network =
+    [ [ 0.3, 0.6 ], [ 0.2, 0.8, 0.9 ] ]
+
+
+sigmoid : Float -> Float
+sigmoid x =
+    1 / (1 + e ^ -x)
+
+
 networkFactory : List Int -> Network
 networkFactory layerDims =
     let
         layers =
-            fromList layerDims
+            fromList (layerDims ++ [ 1 ])
 
         randomWeights len =
             List.repeat len 0.7
@@ -52,4 +90,4 @@ networkFactory layerDims =
         allLayers =
             [ entryLayer ] ++ hiddenLayers
     in
-        { layers = allLayers }
+        { layers = allLayers, activation = "sigmoid" }
