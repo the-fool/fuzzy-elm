@@ -57,7 +57,7 @@ update message model =
             { model | window = ( width, height ) } ! []
 
         SelectInput points ->
-            model ! []
+            { model | inputs = points } ! []
 
         AddNeuron column ->
             let

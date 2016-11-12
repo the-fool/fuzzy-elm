@@ -1,5 +1,7 @@
 module Models exposing (..)
 
+import Random.Pcg as Random
+
 
 colors : { positive : String, negative : String }
 colors =
@@ -38,7 +40,7 @@ emptyModel : Model
 emptyModel =
     { network = initNetwork
     , window = ( 1, 1 )
-    , inputs = []
+    , inputs = [ ( 0, 0, 0 ) ]
     }
 
 

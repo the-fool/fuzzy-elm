@@ -7,6 +7,7 @@ import Models exposing (..)
 import Update exposing (Msg(..))
 import SvgViews exposing (largeChart)
 import Datasets exposing (selectXor)
+import Random.Pcg as Random
 
 
 type alias Geometry =
@@ -55,7 +56,7 @@ view model =
             [ class "main-wrapper" ]
             [ header
             , div [ class "ui-wrapper clearfix mx-auto", style [ ( "width", px maxWidth ) ] ]
-                [ column datasetsWidth dataSets
+                [ column datasetsWidth <| dataSets model
                 , column networkWidth <| network (factor networkWidth) model
                 , column outputWidth <| output model
                 ]
@@ -73,11 +74,19 @@ header =
         ]
 
 
-dataSets : Html Msg
-dataSets =
+dataSets : Model -> Html Msg
+dataSets model =
     let
-        dataSelector config =
-            div [ onClick <| snd config ] [ text <| fst config ]
+        seeder =
+            case List.head model.inputs of
+                Nothing ->
+                    2
+
+                Just ( x, y, c ) ->
+                    (x * y) ^ 2 + 1
+
+        dataSelector ( name, handler ) =
+            div [ onClick <| handler seeder ] [ text name ]
 
         dataOptions =
             [ ( "XOR", selectXor ), ( "GAUSSIAN", selectXor ) ]
