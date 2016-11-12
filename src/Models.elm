@@ -16,7 +16,7 @@ type alias Model =
 
 
 type alias Point =
-    ( Int, Int, Int )
+    ( Float, Float, Int )
 
 
 type alias Network =

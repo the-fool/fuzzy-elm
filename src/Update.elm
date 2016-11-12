@@ -1,8 +1,7 @@
 module Update exposing (..)
 
-import Window
 import Debug
-import Models exposing (Model, Layer, Network, newNeuron)
+import Models exposing (Model, Point, Layer, Network, newNeuron)
 import Monocle.Lens exposing (..)
 
 
@@ -17,6 +16,7 @@ type Msg
     | AddLayer
     | RemoveLayer
     | WindowResize ( Int, Int )
+    | SelectInput (List Point)
 
 
 modelHiddenLayerLens : Lens Model (List Layer)
@@ -55,6 +55,9 @@ update message model =
 
         WindowResize ( width, height ) ->
             { model | window = ( width, height ) } ! []
+
+        SelectInput points ->
+            model ! []
 
         AddNeuron column ->
             let

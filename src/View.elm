@@ -76,13 +76,15 @@ header =
 dataSets : Html Msg
 dataSets =
     let
-        data =
-            List.map (\( x, y ) -> ( x, y, 1 )) <| randomPairs 100
+        dataSelector name =
+            div [ onClick (SelectInput [ ( 0.3, 0.6, 1 ) ]) ] [ text name ]
+
+        dataOptions =
+            [ "XOR", "GAUSSIAN" ]
     in
         div
-            [ class "datasets-wrapper"
-            ]
-            [ largeChart 100 data ]
+            [ class "datasets-wrapper" ]
+            (List.map dataSelector dataOptions)
 
 
 network : Int -> Model -> Html Msg
