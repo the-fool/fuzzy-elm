@@ -1,10 +1,10 @@
 module Network exposing (..)
 
+import Array exposing (..)
+
 
 type alias Network =
-    { hidden : List Layer
-    , entry : Layer
-    }
+    { layers : List Layer }
 
 
 type alias Layer =
@@ -15,13 +15,41 @@ type alias Neuron =
     List Float
 
 
-initNetwork : List Int -> Network
-initNetwork layerDims =
-    { hidden = List.map (\len -> List.repeat len newNeuron) layerDims
-    , entry = [ newNeuron, newNeuron ]
-    }
+networkFactory : List Int -> Network
+networkFactory layerDims =
+    let
+        layers =
+            fromList layerDims
 
+        randomWeights len =
+            List.repeat len 0.7
 
-newNeuron : Neuron
-newNeuron =
-    [ 0.1, 0.3 ]
+        entryLayer =
+            case List.head layerDims of
+                Just n ->
+                    List.repeat n [ 1.0, 0.0 ]
+
+                Nothing ->
+                    []
+
+        hiddenLayers =
+            List.map
+                (\x ->
+                    case get (x - 1) layers of
+                        Just numPrev ->
+                            case get x layers of
+                                Just numHere ->
+                                    List.repeat numHere (randomWeights numPrev)
+
+                                Nothing ->
+                                    []
+
+                        Nothing ->
+                            []
+                )
+                [1..(length layers - 1)]
+
+        allLayers =
+            [ entryLayer ] ++ hiddenLayers
+    in
+        { layers = allLayers }

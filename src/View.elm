@@ -99,11 +99,19 @@ dataSets model =
 network : Int -> Model -> Html Msg
 network networkWidth model =
     let
-        network =
-            model.network
+        entry =
+            case List.head model.network.layers of
+                Just entryLayer ->
+                    entryLayer
+
+                Nothing ->
+                    [ [] ]
+
+        hidden =
+            List.drop 1 model.network.layers
 
         gutter =
-            (*) <| (networkWidth - geometry.boxSize - 20) // (List.length network.hidden)
+            (*) <| (networkWidth - geometry.boxSize - 20) // (List.length hidden)
     in
         div
             [ class "network-wrapper" ]
@@ -111,15 +119,15 @@ network networkWidth model =
                 [ class "layer-editor-wrapper"
                 , style [ ( "margin-left", px geometry.boxSize ) ]
                 ]
-                [ viewModLayers network.hidden
-                , viewModNeurons gutter network.hidden
+                [ hidden |> viewModLayers
+                , hidden |> viewModNeurons gutter
                 ]
             , div
                 [ class "nodes-wrapper relative"
                 , style [ ( "margin-top", px 30 ) ]
                 ]
-                [ viewEntryLayer network.entry
-                , viewHiddenLayers gutter network.hidden
+                [ entry |> viewEntryLayer
+                , hidden |> viewHiddenLayers gutter
                 ]
             ]
 
@@ -184,8 +192,8 @@ viewModNeurons gutter layers =
             div
                 [ style (List.concat [ [ ( "position", "absolute" ) ], position ( spacer x, 0 ) ])
                 ]
-                [ buttonFaMsg "fa-plus" (AddNeuron (x - 1))
-                , buttonFaMsg "fa-minus" (RemoveNeuron (x - 1))
+                [ buttonFaMsg "fa-plus" (AddNeuron x)
+                , buttonFaMsg "fa-minus" (RemoveNeuron x)
                 ]
     in
         div

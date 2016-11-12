@@ -3,7 +3,6 @@ module Update exposing (..)
 import Debug
 import Models exposing (Model, Point)
 import Network exposing (..)
-import Monocle.Lens exposing (..)
 
 
 type alias Column =
@@ -20,32 +19,23 @@ type Msg
     | SelectInput (List Point)
 
 
-modelHiddenLayerLens : Lens Model (List Layer)
-modelHiddenLayerLens =
+alterLayer : (Int -> Bool) -> (Int -> Int) -> Int -> Network -> Network
+alterLayer predicate action layerIndex oldNetwork =
     let
-        networkHiddenLayerLens : Lens Network (List Layer)
-        networkHiddenLayerLens =
-            let
-                get a =
-                    a.hidden
+        oldDims =
+            List.map List.length oldNetwork.layers
 
-                set hd a =
-                    { a | hidden = hd }
-            in
-                Lens get set
-
-        modelNetworkLens : Lens Model Network
-        modelNetworkLens =
-            let
-                get a =
-                    a.network
-
-                set net a =
-                    { a | network = net }
-            in
-                Lens get set
+        newDims =
+            List.indexedMap
+                (\i neuronCount ->
+                    if i == layerIndex && predicate neuronCount then
+                        action neuronCount
+                    else
+                        neuronCount
+                )
+                oldDims
     in
-        modelNetworkLens `compose` networkHiddenLayerLens
+        networkFactory newDims
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -62,57 +52,46 @@ update message model =
 
         AddNeuron column ->
             let
-                oldHiddenLayers =
-                    modelHiddenLayerLens.get model
+                predicate =
+                    (>) 8
 
-                newHiddenLayers =
-                    List.indexedMap
-                        (\i layer ->
-                            if i == column && (List.length layer) < 8 then
-                                layer ++ [ newNeuron ]
-                            else
-                                layer
-                        )
-                        oldHiddenLayers
+                action =
+                    (+) 1
             in
-                modelHiddenLayerLens.set newHiddenLayers model ! []
+                { model | network = alterLayer predicate action column model.network } ! []
 
         RemoveNeuron column ->
             let
-                oldHiddenLayers =
-                    modelHiddenLayerLens.get model
+                predicate =
+                    (/=) 1
 
-                newHiddenLayers =
-                    List.indexedMap
-                        (\i layer ->
-                            if i == column && (List.length layer) /= 1 then
-                                List.drop 1 layer
-                            else
-                                layer
-                        )
-                        oldHiddenLayers
+                action =
+                    (+) -1
             in
-                modelHiddenLayerLens.set newHiddenLayers model ! []
+                { model | network = alterLayer predicate action column model.network } ! []
 
         AddLayer ->
             let
-                newHidden =
-                    if List.length model.network.hidden > 5 then
-                        modelHiddenLayerLens.get model
+                oldDims =
+                    List.map List.length model.network.layers
+
+                newDims =
+                    if List.length oldDims > 5 then
+                        oldDims
                     else
-                        (modelHiddenLayerLens.get model) ++ [ [ newNeuron ] ]
+                        oldDims ++ [ 1 ]
             in
-                modelHiddenLayerLens.set newHidden model ! []
+                { model | network = networkFactory newDims } ! []
 
         RemoveLayer ->
             let
-                hidden =
-                    modelHiddenLayerLens.get model
+                oldDims =
+                    List.map List.length model.network.layers
 
-                newHidden =
-                    if List.length hidden == 0 then
-                        hidden
+                newDims =
+                    if List.length oldDims == 1 then
+                        oldDims
                     else
-                        List.take (List.length hidden - 1) hidden
+                        List.take (List.length oldDims - 1) oldDims
             in
-                modelHiddenLayerLens.set newHidden model ! []
+                { model | network = networkFactory newDims } ! []
