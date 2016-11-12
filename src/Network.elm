@@ -1,6 +1,7 @@
 module Network exposing (..)
 
 import Array exposing (..)
+import Debug
 
 
 {--In order to serialize to localStorage, activation function must be stored as a string --}
@@ -16,8 +17,8 @@ activations k =
             sigmoid
 
 
-entryNeuronTypes : String -> ( Float, Float ) -> Float
-entryNeuronTypes k =
+entryNeuronFunctions : String -> ( Float, Float ) -> Float
+entryNeuronFunctions k =
     case k of
         "x" ->
             \( x, y ) -> x
@@ -26,7 +27,7 @@ entryNeuronTypes k =
             \( x, y ) -> y
 
         _ ->
-            \( x, y ) -> x
+            Debug.crash "Invalid key for input function!"
 
 
 type alias Network =
@@ -53,23 +54,28 @@ getShape network =
         List.map List.length nonOutput
 
 
+processInput : Network -> ( Float, Float ) -> List Float
+processInput network ( x, y ) =
+    List.map (\k -> entryNeuronFunctions k <| ( x, y )) network.entryNeurons
+
+
 
 {--Returns a matrix representing the output of every node in the network --}
 
 
 forwardProp : ( Float, Float ) -> Network -> List (List Float)
-forwardProp input network =
-    [ [ 0.3, 0.6 ], [ 0.2, 0.8, 0.9 ] ]
-
-
-sigmoid : Float -> Float
-sigmoid x =
-    1 / (1 + e ^ -x)
+forwardProp ( x, y ) network =
+    let
+        inputVector =
+            processInput network ( x, y )
+    in
+        [ [ 0.3, 0.6 ], [ 0.2, 0.8, 0.9 ] ]
 
 
 networkFactory : List Int -> Network
 networkFactory layerDims =
     let
+        {--Add the output node--}
         layers =
             fromList (layerDims ++ [ 1 ])
 
@@ -91,7 +97,7 @@ networkFactory layerDims =
                         Just numPrev ->
                             case get x layers of
                                 Just numHere ->
-                                    List.repeat numHere (randomWeights numPrev)
+                                    List.repeat numHere (1 :: randomWeights numPrev)
 
                                 Nothing ->
                                     []
@@ -102,6 +108,11 @@ networkFactory layerDims =
                 [1..(length layers - 1)]
 
         allLayers =
-            [ entryLayer ] ++ hiddenLayers
+            entryLayer :: hiddenLayers
     in
         { layers = allLayers, activation = "sigmoid", entryNeurons = [ "x", "y" ] }
+
+
+sigmoid : Float -> Float
+sigmoid x =
+    1 / (1 + e ^ -x)
