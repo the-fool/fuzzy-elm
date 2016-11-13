@@ -39,4 +39,5 @@ brutePredictions network =
         points =
             lift2 (\y x -> ( x, y )) scaledInputs scaledInputs
     in
-        List.map (Network.forwardProp network) points
+        -- Drop 1 to ignore the original input element
+        List.map ((Network.forwardProp network) >> (List.drop 1)) points
