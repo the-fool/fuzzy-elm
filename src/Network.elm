@@ -87,7 +87,10 @@ networkFactory activation entryNeurons layerDims =
         layers =
             layersFactory layerDims
     in
-        { layers = layers, activation = activation, entryNeurons = entryNeurons }
+        if List.head layerDims == Just (List.length entryNeurons) then
+            { layers = layers, activation = activation, entryNeurons = entryNeurons }
+        else
+            Debug.crash "Entry neuron function list is not the same length as the layer dimension!"
 
 
 processInput : Network -> ( Float, Float ) -> List Float
