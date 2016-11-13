@@ -13,7 +13,7 @@ activations k =
             sigmoid
 
         _ ->
-            sigmoid
+            Debug.crash ("Illegal string key " ++ k ++ " for activation function")
 
 
 entryNeuronFunctions : String -> ( Float, Float ) -> Float
@@ -85,22 +85,20 @@ forwardProp ( x, y ) network =
         firstInputs =
             processInput network ( x, y )
 
-        doNeuron : List Float -> List Float -> Float
         doNeuron incoming weights =
             dot (1 :: incoming) weights
                 |> activation
 
-        doLayer : List (List Float) -> List Float -> List Float
         doLayer layer incoming =
             List.map (doNeuron incoming) layer
     in
         List.scanl doLayer firstInputs nonEntryLayers
 
 
-networkFactory : List Int -> Network
-networkFactory layerDims =
+layersFactory : List Int -> List Layer
+layersFactory layerDims =
     let
-        {--Add the output node--}
+        --Add the output node
         layers =
             List.drop 1 <| (layerDims ++ [ 1 ])
 
@@ -114,19 +112,25 @@ networkFactory layerDims =
 
                 Nothing ->
                     Debug.crash "No entry layer"
-
-        allLayers =
-            List.scanl
-                (\cur prev ->
-                    List.length prev
-                        |> randomWeights
-                        |> (::) 1
-                        |> List.repeat cur
-                )
-                entryLayer
-                layers
     in
-        { layers = allLayers, activation = "sigmoid", entryNeurons = [ "x", "y" ] }
+        List.scanl
+            (\cur prev ->
+                List.length prev
+                    |> randomWeights
+                    |> (::) 1
+                    |> List.repeat cur
+            )
+            entryLayer
+            layers
+
+
+networkFactory : String -> List String -> List Int -> Network
+networkFactory activation entryNeurons layerDims =
+    let
+        layers =
+            layersFactory layerDims
+    in
+        { layers = layers, activation = activation, entryNeurons = entryNeurons }
 
 
 sigmoid : Float -> Float

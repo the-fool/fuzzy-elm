@@ -19,8 +19,23 @@ type Msg
     | SelectInput (List Point)
 
 
-alterLayer : (Int -> Bool) -> (Int -> Int) -> Int -> Network -> Network
-alterLayer predicate action layerIndex oldNetwork =
+alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Network -> Network
+alterLayerCount predicate action oldNetwork =
+    let
+        oldShape =
+            Network.getShape oldNetwork
+
+        newShape =
+            if List.length oldShape |> predicate then
+                action oldShape
+            else
+                oldShape
+    in
+        { oldNetwork | layers = layersFactory newShape }
+
+
+alterNeuronCount : (Int -> Bool) -> (Int -> Int) -> Int -> Network -> Network
+alterNeuronCount predicate action layerIndex oldNetwork =
     let
         oldShape =
             Network.getShape oldNetwork
@@ -35,7 +50,7 @@ alterLayer predicate action layerIndex oldNetwork =
                 )
                 oldShape
     in
-        networkFactory newShape
+        { oldNetwork | layers = layersFactory newShape }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -58,7 +73,7 @@ update message model =
                 action =
                     (+) 1
             in
-                { model | network = alterLayer predicate action column model.network } ! []
+                { model | network = alterNeuronCount predicate action column model.network } ! []
 
         RemoveNeuron column ->
             let
@@ -68,30 +83,28 @@ update message model =
                 action =
                     (+) -1
             in
-                { model | network = alterLayer predicate action column model.network } ! []
+                { model | network = alterNeuronCount predicate action column model.network } ! []
 
         AddLayer ->
             let
-                oldShape =
-                    Network.getShape model.network
+                predicate =
+                    (>=) 5
 
-                newShape =
-                    if List.length oldShape > 5 then
-                        oldShape
-                    else
-                        oldShape ++ [ 1 ]
+                action =
+                    flip (++) <| [ 1 ]
             in
-                { model | network = networkFactory newShape } ! []
+                { model | network = alterLayerCount predicate action model.network } ! []
 
         RemoveLayer ->
             let
-                oldShape =
-                    Network.getShape model.network
+                predicate =
+                    (<) 1
 
-                newShape =
-                    if List.length oldShape == 1 then
-                        oldShape
-                    else
-                        List.take (List.length oldShape - 1) oldShape
+                action =
+                    List.length model.network.layers
+                        |> (+) -2
+                        -- Remove 2, to account for the fact that the output neuron is appended in the factory
+                        |>
+                            List.take
             in
-                { model | network = networkFactory newShape } ! []
+                { model | network = alterLayerCount predicate action model.network } ! []
