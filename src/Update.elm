@@ -15,6 +15,7 @@ type Msg
     | RemoveNeuron Column
     | AddLayer
     | RemoveLayer
+    | Begin Int
     | WindowResize ( Int, Int )
     | SelectInput (List Point)
 
@@ -64,6 +65,9 @@ update message model =
 
         SelectInput points ->
             { model | inputs = points } ! []
+
+        Begin flag ->
+            model ! []
 
         AddNeuron column ->
             let

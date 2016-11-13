@@ -4,13 +4,14 @@ import Html exposing (Html)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Models exposing (..)
+import Datasets exposing (dataRange)
 
 
 largeChart : Float -> List ( Float, Float, Int ) -> Html.Html a
 largeChart dim data =
     let
         factor =
-            (+) 5 >> (*) (dim / 10)
+            (+) dataRange >> (*) (dim / (dataRange * 2))
 
         normalizedData =
             List.map (\( x, y, c ) -> ( factor x, factor y, c )) data

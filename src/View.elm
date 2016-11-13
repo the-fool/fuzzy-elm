@@ -59,9 +59,15 @@ view model =
             [ class "main-wrapper" ]
             [ header
             , div [ class "ui-wrapper clearfix mx-auto", style [ ( "width", px maxWidth ) ] ]
-                [ column datasetsWidth <| dataSets model
-                , column networkWidth <| network (factor networkWidth) nonOutputLayers
-                , column outputWidth <| output model
+                [ div [ class "controls" ]
+                    [ h1 [] [ text "controls" ]
+                    , button [ class "btn", onClick (Begin 1) ] []
+                    ]
+                , div [ class "visuals" ]
+                    [ column datasetsWidth <| dataSets model
+                    , column networkWidth <| network (factor networkWidth) nonOutputLayers
+                    , column outputWidth <| output model
+                    ]
                 ]
             ]
 

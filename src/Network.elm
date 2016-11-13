@@ -22,8 +22,8 @@ type alias Neuron =
 {--Returns a matrix representing the output of every node in the network --}
 
 
-forwardProp : ( Float, Float ) -> Network -> List (List Float)
-forwardProp ( x, y ) network =
+forwardProp : Network -> ( Float, Float ) -> List (List Float)
+forwardProp network ( x, y ) =
     let
         activation =
             activations network.activation

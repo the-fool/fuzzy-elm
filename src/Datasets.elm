@@ -5,6 +5,11 @@ import Models exposing (Point)
 import Update exposing (Msg(..))
 
 
+dataRange : Float
+dataRange =
+    5
+
+
 selectXor : Float -> Msg
 selectXor val =
     let
@@ -12,7 +17,7 @@ selectXor val =
         seeder =
             toFloat Random.maxInt / val |> truncate
     in
-        SelectInput <| xorData seeder ( -4, 4 )
+        SelectInput <| xorData seeder ( -(dataRange - 1), (dataRange - 1) )
 
 
 xorData : Int -> ( Float, Float ) -> List Point
