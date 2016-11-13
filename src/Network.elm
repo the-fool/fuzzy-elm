@@ -108,7 +108,10 @@ layersFactory layerDims =
         entryLayer =
             case List.head layerDims of
                 Just n ->
-                    List.repeat n [ 1.0, 0.0 ]
+                    -- Dummy values.  Entry neurons do not have weights.
+                    -- there just has to be a matrix of numbers in the entry layer
+                    -- for the sake of bootstrapping the recursive construction of hidden layers
+                    List.repeat n [ 0.0 ]
 
                 Nothing ->
                     Debug.crash "No entry layer"
