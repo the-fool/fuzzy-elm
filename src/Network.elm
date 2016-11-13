@@ -3,32 +3,6 @@ module Network exposing (..)
 import Debug
 
 
-{--In order to serialize to localStorage, activation function must be stored as a string --}
-
-
-activations : String -> Float -> Float
-activations k =
-    case k of
-        "sigmoid" ->
-            sigmoid
-
-        _ ->
-            Debug.crash ("Illegal string key " ++ k ++ " for activation function")
-
-
-entryNeuronFunctions : String -> ( Float, Float ) -> Float
-entryNeuronFunctions k =
-    case k of
-        "x" ->
-            \( x, y ) -> x
-
-        "y" ->
-            \( x, y ) -> y
-
-        _ ->
-            Debug.crash "Invalid key for input function!"
-
-
 type alias Network =
     { layers : List Layer
     , activation : String
@@ -42,26 +16,6 @@ type alias Layer =
 
 type alias Neuron =
     List Float
-
-
-getShape : Network -> List Int
-getShape network =
-    let
-        nonOutput =
-            List.take (List.length network.layers - 1) network.layers
-    in
-        List.map List.length nonOutput
-
-
-processInput : Network -> ( Float, Float ) -> List Float
-processInput network ( x, y ) =
-    network.entryNeurons
-        |> List.map (entryNeuronFunctions >> ((|>) ( x, y )))
-
-
-dot : List Float -> List Float -> Float
-dot xs =
-    List.sum << List.map2 (*) xs
 
 
 
@@ -136,6 +90,53 @@ networkFactory activation entryNeurons layerDims =
         { layers = layers, activation = activation, entryNeurons = entryNeurons }
 
 
+processInput : Network -> ( Float, Float ) -> List Float
+processInput network ( x, y ) =
+    network.entryNeurons
+        |> List.map (entryNeuronFunctions >> ((|>) ( x, y )))
+
+
+getShape : Network -> List Int
+getShape network =
+    let
+        nonOutput =
+            List.take (List.length network.layers - 1) network.layers
+    in
+        List.map List.length nonOutput
+
+
+dot : List Float -> List Float -> Float
+dot xs =
+    List.sum << List.map2 (*) xs
+
+
 sigmoid : Float -> Float
 sigmoid x =
     1 / (1 + e ^ -x)
+
+
+
+{--In order to serialize to localStorage, activation function must be stored as a string --}
+
+
+activations : String -> Float -> Float
+activations k =
+    case k of
+        "sigmoid" ->
+            sigmoid
+
+        _ ->
+            Debug.crash ("Illegal string key " ++ k ++ " for activation function")
+
+
+entryNeuronFunctions : String -> ( Float, Float ) -> Float
+entryNeuronFunctions k =
+    case k of
+        "x" ->
+            \( x, y ) -> x
+
+        "y" ->
+            \( x, y ) -> y
+
+        _ ->
+            Debug.crash "Invalid key for input function!"
