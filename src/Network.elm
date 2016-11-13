@@ -1,6 +1,5 @@
 module Network exposing (..)
 
-import Array exposing (..)
 import Debug
 
 
@@ -56,7 +55,13 @@ getShape network =
 
 processInput : Network -> ( Float, Float ) -> List Float
 processInput network ( x, y ) =
-    List.map (\k -> entryNeuronFunctions k <| ( x, y )) network.entryNeurons
+    network.entryNeurons
+        |> List.map (entryNeuronFunctions >> ((|>) ( x, y )))
+
+
+dot : List Float -> List Float -> Float
+dot xs =
+    List.sum << List.map2 (*) xs
 
 
 
@@ -66,10 +71,30 @@ processInput network ( x, y ) =
 forwardProp : ( Float, Float ) -> Network -> List (List Float)
 forwardProp ( x, y ) network =
     let
-        inputVector =
+        activation =
+            activations network.activation
+
+        nonEntryLayers =
+            case List.tail network.layers of
+                Just layers ->
+                    layers
+
+                Nothing ->
+                    Debug.crash "No layers found in network!"
+
+        firstInputs =
             processInput network ( x, y )
+
+        doNeuron : List Float -> List Float -> Float
+        doNeuron incoming weights =
+            dot (1 :: incoming) weights
+                |> activation
+
+        doLayer : List (List Float) -> List Float -> List Float
+        doLayer layer incoming =
+            List.map (doNeuron incoming) layer
     in
-        [ [ 0.3, 0.6 ], [ 0.2, 0.8, 0.9 ] ]
+        List.scanl doLayer firstInputs nonEntryLayers
 
 
 networkFactory : List Int -> Network
@@ -77,10 +102,10 @@ networkFactory layerDims =
     let
         {--Add the output node--}
         layers =
-            fromList (layerDims ++ [ 1 ])
+            List.drop 1 <| (layerDims ++ [ 1 ])
 
         randomWeights len =
-            List.repeat len 0.7
+            List.repeat len 1
 
         entryLayer =
             case List.head layerDims of
@@ -88,27 +113,18 @@ networkFactory layerDims =
                     List.repeat n [ 1.0, 0.0 ]
 
                 Nothing ->
-                    []
-
-        hiddenLayers =
-            List.map
-                (\x ->
-                    case get (x - 1) layers of
-                        Just numPrev ->
-                            case get x layers of
-                                Just numHere ->
-                                    List.repeat numHere (1 :: randomWeights numPrev)
-
-                                Nothing ->
-                                    []
-
-                        Nothing ->
-                            []
-                )
-                [1..(length layers - 1)]
+                    Debug.crash "No entry layer"
 
         allLayers =
-            entryLayer :: hiddenLayers
+            List.scanl
+                (\cur prev ->
+                    List.length prev
+                        |> randomWeights
+                        |> (::) 1
+                        |> List.repeat cur
+                )
+                entryLayer
+                layers
     in
         { layers = allLayers, activation = "sigmoid", entryNeurons = [ "x", "y" ] }
 
