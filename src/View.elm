@@ -88,8 +88,9 @@ controls model =
                 button [ class "btn", onClick Begin ] [ text "Go" ]
             else
                 button [ class "btn", onClick Pause ] [ text "Stop" ]
+
         reset =
-          button [ class "btn", onClick Reset ] [ text "Reset"]
+            button [ class "btn", onClick Reset ] [ text "Reset" ]
 
         ticker =
             span [] [ toString model.nTicks |> text ]
@@ -114,7 +115,12 @@ dataSets model =
                     (x * y) ^ 2 + 1
 
         dataSelector ( name, handler ) =
-            div [ onClick <| handler seeder ] [ text name ]
+            div
+                [ handler seeder
+                    |> SelectInput
+                    |> onClick
+                ]
+                [ text name ]
 
         dataOptions =
             [ ( "XOR", selectXor ), ( "GAUSSIAN", selectXor ) ]

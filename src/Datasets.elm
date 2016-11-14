@@ -2,7 +2,6 @@ module Datasets exposing (..)
 
 import Random.Pcg as Random
 import Models exposing (Point)
-import Update exposing (Msg(..))
 
 
 dataRange : Float
@@ -10,14 +9,14 @@ dataRange =
     5
 
 
-selectXor : Float -> Msg
+selectXor : Float -> List Point
 selectXor val =
     let
         {--TODO: figure out a more elegant way to keep introducing new seeds --}
         seeder =
             toFloat Random.maxInt / val |> truncate
     in
-        SelectInput <| xorData seeder ( -(dataRange - 1), (dataRange - 1) )
+        xorData seeder ( -(dataRange - 1), (dataRange - 1) )
 
 
 xorData : Int -> ( Float, Float ) -> List Point
