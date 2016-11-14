@@ -1,5 +1,6 @@
 port module Main exposing (..)
 
+import AnimationFrame
 import Html.App as App
 
 
@@ -10,6 +11,17 @@ import View exposing (view)
 import Update exposing (update, Msg(..))
 import Window
 import Task
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ if model.state == 1 then
+            AnimationFrame.diffs Begin
+          else
+            Sub.none
+        , Window.resizes decodeWindowSize
+        ]
 
 
 main : Program (Maybe Model)
