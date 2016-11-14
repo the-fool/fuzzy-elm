@@ -6,7 +6,7 @@ import Html.App as App
 
 {- src -}
 
-import Models exposing (Model, emptyModel)
+import Models exposing (Model, initialModel)
 import View exposing (view)
 import Update exposing (update, Msg(..))
 import Window
@@ -58,4 +58,4 @@ decodeWindowSize size =
 
 init : Maybe Model -> ( Model, Cmd Msg )
 init savedModel =
-    ( Maybe.withDefault emptyModel savedModel, Task.perform (always NoOp) decodeWindowSize Window.size )
+    ( Maybe.withDefault initialModel savedModel, Task.perform (always NoOp) decodeWindowSize Window.size )

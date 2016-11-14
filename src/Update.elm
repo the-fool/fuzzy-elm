@@ -5,6 +5,7 @@ import Models exposing (Model, Point)
 import Network exposing (..)
 import Time exposing (Time)
 
+
 type alias Column =
     Int
 
@@ -76,10 +77,10 @@ update message model =
             { model | state = 0 } ! []
 
         Reset ->
-          { model | nTicks = 0 } ! []
+            { model | nTicks = 0, state = 0 } ! []
 
         Learn time ->
-            {model | nTicks = model.nTicks + 1} ! []
+            { model | nTicks = model.nTicks + 1 } ! []
 
         AddNeuron column ->
             let

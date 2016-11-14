@@ -28,7 +28,7 @@ type alias Model =
     , inputs : List Point
     , state : NetworkState
     , nTicks : Int
-    , heatViz : Predictions
+    , brutePredictions : Predictions
     }
 
 
@@ -36,12 +36,17 @@ type alias Point =
     ( Float, Float, Int )
 
 
-emptyModel : Model
-emptyModel =
-    { network = networkFactory "sigmoid" [ "x", "y" ] [ 2, 3, 4, 3, 1 ]
+initialNetwork : Network
+initialNetwork =
+    Network.networkFactory "sigmoid" [ "x", "y" ] [ 2, 2 ]
+
+
+initialModel : Model
+initialModel =
+    { network = initialNetwork
     , window = ( 1, 1 )
     , inputs = [ ( 0, 0, 0 ) ]
     , state = 0
     , nTicks = 0
-    , heatViz = [ [ [ 0.0 ] ] ]
+    , brutePredictions = [ [ [ 0.0 ] ] ]
     }
