@@ -17,6 +17,7 @@ type Msg
     | RemoveLayer
     | Begin
     | Pause
+    | Reset
     | Learn Time
     | WindowResize ( Int, Int )
     | SelectInput (List Point)
@@ -73,6 +74,9 @@ update message model =
 
         Pause ->
             { model | state = 0 } ! []
+
+        Reset ->
+          { model | nTicks = 0 } ! []
 
         Learn time ->
             {model | nTicks = model.nTicks + 1} ! []

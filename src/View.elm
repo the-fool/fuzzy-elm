@@ -88,12 +88,15 @@ controls model =
                 button [ class "btn", onClick Begin ] [ text "Go" ]
             else
                 button [ class "btn", onClick Pause ] [ text "Stop" ]
+        reset =
+          button [ class "btn", onClick Reset ] [ text "Reset"]
 
         ticker =
             span [] [ toString model.nTicks |> text ]
     in
         div [ class "controls" ]
             [ h1 [] [ text "controls" ]
+            , reset
             , toggleButton
             , ticker
             ]
