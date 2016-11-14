@@ -59,10 +59,7 @@ view model =
             [ class "main-wrapper" ]
             [ header
             , div [ class "ui-wrapper clearfix mx-auto", style [ ( "width", px maxWidth ) ] ]
-                [ div [ class "controls" ]
-                    [ h1 [] [ text "controls" ]
-                    , button [ class "btn", onClick (Begin 1) ] []
-                    ]
+                [ controls model
                 , div [ class "visuals" ]
                     [ column datasetsWidth <| dataSets model
                     , column networkWidth <| network (factor networkWidth) nonOutputLayers
@@ -81,6 +78,25 @@ header =
             [ class "left p2" ]
             [ Html.text "Elm Brain" ]
         ]
+
+
+controls : Model -> Html Msg
+controls model =
+    let
+        toggleButton =
+            if model.state == 0 then
+                button [ class "btn", onClick Begin ] [ text "Go" ]
+            else
+                button [ class "btn", onClick Pause ] [ text "Stop" ]
+
+        ticker =
+            span [] [ toString model.nTicks |> text ]
+    in
+        div [ class "controls" ]
+            [ h1 [] [ text "controls" ]
+            , toggleButton
+            , ticker
+            ]
 
 
 dataSets : Model -> Html Msg
