@@ -3,7 +3,7 @@ module Update exposing (..)
 import Debug
 import Models exposing (Model, Point)
 import Network exposing (..)
-
+import Time exposing (Time)
 
 type alias Column =
     Int
@@ -17,6 +17,7 @@ type Msg
     | RemoveLayer
     | Begin
     | Pause
+    | Learn Time
     | WindowResize ( Int, Int )
     | SelectInput (List Point)
 
@@ -72,6 +73,9 @@ update message model =
 
         Pause ->
             { model | state = 0 } ! []
+
+        Learn time ->
+            {model | nTicks = model.nTicks + 1} ! []
 
         AddNeuron column ->
             let

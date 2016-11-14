@@ -17,7 +17,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ if model.state == 1 then
-            AnimationFrame.diffs Begin
+            AnimationFrame.times Learn
           else
             Sub.none
         , Window.resizes decodeWindowSize
@@ -30,7 +30,7 @@ main =
         { init = init
         , view = view
         , update = updateWithStorage
-        , subscriptions = \_ -> Window.resizes decodeWindowSize
+        , subscriptions = subscriptions
         }
 
 
