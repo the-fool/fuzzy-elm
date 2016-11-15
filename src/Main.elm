@@ -24,22 +24,22 @@ subscriptions model =
         ]
 
 
-main : Program (Maybe Model)
+main : Program Never
 main =
-    App.programWithFlags
-        { init = init
+    App.program
+        { init = (initialModel,  Task.perform (always NoOp) decodeWindowSize Window.size )
         , view = view
-        , update = updateWithStorage
+        , update = update
         , subscriptions = subscriptions
         }
 
 
-port setStorage : Model -> Cmd msg
+-- port setStorage : Model -> Cmd msg
 
 
 {-| We want to `setStorage` on every update. This function adds the setStorage
 command for every step of the update function.
--}
+-
 updateWithStorage : Msg -> Model -> ( Model, Cmd Msg )
 updateWithStorage msg model =
     let
@@ -50,6 +50,7 @@ updateWithStorage msg model =
         , Cmd.batch [ setStorage newModel, cmds ]
         )
 
+-}
 
 decodeWindowSize : Window.Size -> Msg
 decodeWindowSize size =
