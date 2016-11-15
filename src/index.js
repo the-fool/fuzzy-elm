@@ -11,10 +11,15 @@ var mountNode = document.getElementById('main');
 
 var storedState = localStorage.getItem('elm-todo-save');
 var startingState = storedState ? JSON.parse(storedState) : null;
+/*
 var brain = Elm.Main.fullscreen(startingState);
+
 brain.ports.setStorage.subscribe(function(state) {
     localStorage.setItem('elm-todo-save', JSON.stringify(state));
 });
+*/
+
+var brain = Elm.Main.fullscreen();
 console.log(brain);
 brain.ports.drawCanvas.subscribe(function(data) {
   console.log(data);

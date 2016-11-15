@@ -41,17 +41,21 @@ type alias Point =
 
 initialNetwork : Network
 initialNetwork =
-    Network.networkFactory "sigmoid" [ "x", "y" ] [ 2, 2 ]
+    Network.networkFactory Sigmoid [ "x", "y" ] [ 2, 2 ]
 
+seed0 : Random.Seed
+seed0 = Random.initialSeed 628318530 |> Random.step Random.independentSeed |> snd
+
+initialInputsAndSeed : (List Point, Random.Seed)
+initialInputsAndSeed = Datasets.xorData seed0
 
 initialModel : Model
 initialModel =
     { network = initialNetwork
     , window = ( 1, 1 )
-    , inputs = Datasets.xorData 999
+    , inputs = fst initialInputsAndSeed
     , state = 0
     , nTicks = 0
     , brutePredictions = Datasets.brutePredictions initialNetwork
-    , randomSeed = Random.initialSeed 628318530 |> Random.step Random.independentSeed |> snd
-
+    , randomSeed = snd initialInputsAndSeed
     }

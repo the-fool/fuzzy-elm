@@ -5,7 +5,7 @@ import Debug
 
 type alias Network =
     { layers : List Layer
-    , activation : String
+    , activation : Activation
     , entryNeurons : List String
     }
 
@@ -29,7 +29,7 @@ forwardProp : Network -> ( Float, Float ) -> List (List Float)
 forwardProp network ( x, y ) =
     let
         activation =
-            activations network.activation
+            activationFunction network.activation
 
         nonEntryLayers =
             case List.tail network.layers of
@@ -84,7 +84,7 @@ layersFactory layerDims =
             layers
 
 
-networkFactory : String -> List String -> List Int -> Network
+networkFactory : Activation -> List String -> List Int -> Network
 networkFactory activation entryNeurons layerDims =
     let
         layers =
@@ -120,7 +120,13 @@ sigmoid : Float -> Float
 sigmoid x =
     1 / (1 + e ^ -x)
 
+type Activation = Sigmoid | Tanh
 
+activationFunction : Activation -> (Float -> Float)
+activationFunction f =
+  case f of
+    Sigmoid -> sigmoid
+    Tanh -> sigmoid
 
 {--In order to serialize to localStorage, activation function must be stored as a string --}
 
