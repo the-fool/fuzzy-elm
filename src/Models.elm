@@ -1,6 +1,7 @@
 module Models exposing (..)
 
 import Network exposing (..)
+import Datasets
 
 
 colors : { positive : String, negative : String }
@@ -45,8 +46,8 @@ initialModel : Model
 initialModel =
     { network = initialNetwork
     , window = ( 1, 1 )
-    , inputs = [ ( 0, 0, 0 ) ]
+    , inputs = Datasets.xorData 999
     , state = 0
     , nTicks = 0
-    , brutePredictions = [ [ [ 0.0 ] ] ]
+    , brutePredictions = Datasets.brutePredictions initialNetwork
     }

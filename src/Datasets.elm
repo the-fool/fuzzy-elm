@@ -1,7 +1,13 @@
 module Datasets exposing (..)
 
 import Random.Pcg as Random
-import Models exposing (Point)
+import CanvasViz exposing (density)
+import List.Extra exposing (lift2)
+import Network
+
+
+type alias Point =
+    ( Float, Float, Int )
 
 
 dataRange : Float
@@ -16,11 +22,11 @@ selectXor val =
         seeder =
             toFloat Random.maxInt / val |> truncate
     in
-        xorData seeder ( -(dataRange - 1), (dataRange - 1) )
+        xorData seeder
 
 
-xorData : Int -> ( Float, Float ) -> List Point
-xorData seeder ( min, max ) =
+xorData : Int -> List Point
+xorData seeder =
     let
         label ( x, y ) =
             if (x * y) >= 0 then
@@ -29,7 +35,7 @@ xorData seeder ( min, max ) =
                 ( x, y, -1 )
 
         padding =
-            0.04 * (max - min)
+            0.04 * dataRange
 
         pad i =
             if i > 0 then
@@ -37,7 +43,7 @@ xorData seeder ( min, max ) =
             else
                 i - padding
     in
-        randomPairs seeder ( min, max ) 200
+        randomPairs seeder ( -(dataRange - 1), (dataRange + 1) ) 200
             |> List.map (\( x, y ) -> ( pad x, pad y ))
             |> List.map label
 
@@ -53,3 +59,36 @@ randomPairs seeder ( min, max ) len =
                 |> Random.list len
     in
         Random.step gen seed |> fst
+
+
+scale : ( Float, Float ) -> ( Float, Float ) -> Float -> Float
+scale domain range x =
+    let
+        ( min, max ) =
+            domain
+
+        ( a, b ) =
+            range
+    in
+        (b - a) * (x - min) / (max - min) + a
+
+
+
+--    Produce list of network outputs (in the form of matrices) for each input point.
+--    There will be density ^ 2 points
+
+
+brutePredictions : Network.Network -> List (List (List Float))
+brutePredictions network =
+    let
+        scaleFun =
+            scale ( 0, density ) ( -dataRange, dataRange )
+
+        scaledInputs =
+            List.map scaleFun [0..density]
+
+        points =
+            lift2 (\y x -> ( x, y )) scaledInputs scaledInputs
+    in
+        -- Drop 1 to ignore the original input element
+        List.map ((Network.forwardProp network) >> (List.drop 1)) points
