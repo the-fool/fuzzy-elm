@@ -1,4 +1,4 @@
-module Update exposing (..)
+port module Update exposing (..)
 
 import Debug
 import Models exposing (Model, Point)
@@ -22,6 +22,9 @@ type Msg
     | Learn Time
     | WindowResize ( Int, Int )
     | SelectInput (List Point)
+
+
+port drawCanvas : List ( String, ( Float, Float ), List Int ) -> Cmd msg
 
 
 alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Network -> Network
@@ -80,7 +83,7 @@ update message model =
             { model | nTicks = 0, state = 0 } ! []
 
         Learn time ->
-            { model | nTicks = model.nTicks + 1 } ! []
+            ( { model | nTicks = model.nTicks + 1 }, drawCanvas [ ( "foo", ( 300, 300 ), [ 1, 2, 3 ] ) ] )
 
         AddNeuron column ->
             let

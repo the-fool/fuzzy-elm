@@ -19,7 +19,10 @@ type alias Neuron =
 
 
 
-{--Returns a matrix representing the output of every node in the network --}
+{--
+Returns a matrix representing the output of every node in the network.
+That is why the list operation is a scan
+--}
 
 
 forwardProp : Network -> ( Float, Float ) -> List (List Float)

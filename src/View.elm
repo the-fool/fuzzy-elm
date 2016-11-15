@@ -6,7 +6,7 @@ import Html.Attributes exposing (class, id, style)
 import Models exposing (..)
 import Network exposing (..)
 import Update exposing (Msg(..))
-import SvgViews exposing (largeChart)
+import SvgViews
 import Datasets exposing (selectXor)
 
 
@@ -15,6 +15,7 @@ type alias Geometry =
     , boxSize : Int
     , datasetsPcnt : Float
     , networkPcnt : Float
+    , outputBox : Float
     }
 
 
@@ -24,6 +25,7 @@ geometry =
     , boxSize = 45
     , datasetsPcnt = 0.1
     , networkPcnt = 0.6
+    , outputBox = 300
     }
 
 
@@ -139,7 +141,7 @@ network networkWidth layers =
                     entryLayer
 
                 Nothing ->
-                    [ [] ]
+                    Debug.crash "Nothing in entry layer"
 
         hidden =
             List.drop 1 layers
@@ -170,7 +172,9 @@ output : Model -> Html Msg
 output model =
     div
         [ class "ml2" ]
-        [ largeChart 300 model.inputs ]
+        [ canvas [ id "output", class "absolute", style [ ( "width", toString geometry.outputBox ), ( "height", toString geometry.outputBox ) ] ] []
+        , SvgViews.largeChart geometry.outputBox model.inputs
+        ]
 
 
 viewModLayers : List Layer -> Html Msg

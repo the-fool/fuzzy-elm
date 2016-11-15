@@ -15,5 +15,9 @@ var brain = Elm.Main.fullscreen(startingState);
 brain.ports.setStorage.subscribe(function(state) {
     localStorage.setItem('elm-todo-save', JSON.stringify(state));
 });
+console.log(brain);
+brain.ports.drawCanvas.subscribe(function(data) {
+  console.log(data);
+});
 // The third value on embed are the initial values for incomming ports into Elm
 //var app = Elm.Main.embed(mountNode);
