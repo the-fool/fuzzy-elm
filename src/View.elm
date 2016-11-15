@@ -7,7 +7,7 @@ import Models exposing (..)
 import Network exposing (..)
 import Update exposing (Msg(..))
 import SvgViews
-import Datasets exposing (selectXor)
+import Datasets exposing (xorData)
 
 
 type alias Geometry =
@@ -108,24 +108,16 @@ controls model =
 dataSets : Model -> Html Msg
 dataSets model =
     let
-        seeder =
-            case List.head model.inputs of
-                Nothing ->
-                    2
-
-                Just ( x, y, c ) ->
-                    (x * y) ^ 2 + 1
-
         dataSelector ( name, handler ) =
             div
-                [ handler seeder
+                [ handler model.randomSeed
                     |> SelectInput
                     |> onClick
                 ]
                 [ text name ]
 
         dataOptions =
-            [ ( "XOR", selectXor ), ( "GAUSSIAN", selectXor ) ]
+            [ ( "XOR", xorData ), ( "GAUSSIAN", xorData ) ]
     in
         div
             [ class "datasets-wrapper" ]

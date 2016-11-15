@@ -15,17 +15,8 @@ dataRange =
     5
 
 
-selectXor : Float -> List Point
-selectXor val =
-    let
-        {--TODO: figure out a more elegant way to keep introducing new seeds --}
-        seeder =
-            toFloat Random.maxInt / val |> truncate
-    in
-        xorData seeder
 
-
-xorData : Int -> List Point
+xorData : Random.Seed -> (List Point, Random.Seed)
 xorData seeder =
     let
         label ( x, y ) =
@@ -35,30 +26,30 @@ xorData seeder =
                 ( x, y, -1 )
 
         padding =
-            0.04 * dataRange
+            0.04
 
         pad i =
             if i > 0 then
                 i + padding
             else
                 i - padding
+        (data, seed) =
+            randomPairs seeder ( -(dataRange - 1), (dataRange + 1) ) 200
     in
-        randomPairs seeder ( -(dataRange - 1), (dataRange + 1) ) 200
+        (data
             |> List.map (\( x, y ) -> ( pad x, pad y ))
             |> List.map label
+          , seed)
 
 
-randomPairs : Int -> ( Float, Float ) -> Int -> List ( Float, Float )
-randomPairs seeder ( min, max ) len =
+randomPairs : Random.Seed -> ( Float, Float ) -> Int -> (List ( Float, Float ), Random.Seed)
+randomPairs seed ( min, max ) len =
     let
-        seed =
-            Random.initialSeed seeder |> Random.step Random.independentSeed |> snd
-
         gen =
             Random.pair (Random.float min max) (Random.float min max)
                 |> Random.list len
     in
-        Random.step gen seed |> fst
+        Random.step gen seed
 
 
 scale : ( Float, Float ) -> ( Float, Float ) -> Float -> Float

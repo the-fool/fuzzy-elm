@@ -2,6 +2,7 @@ module Models exposing (..)
 
 import Network exposing (..)
 import Datasets
+import Random.Pcg as Random
 
 
 colors : { positive : String, negative : String }
@@ -30,6 +31,7 @@ type alias Model =
     , state : NetworkState
     , nTicks : Int
     , brutePredictions : Predictions
+    , randomSeed : Random.Seed
     }
 
 
@@ -50,4 +52,6 @@ initialModel =
     , state = 0
     , nTicks = 0
     , brutePredictions = Datasets.brutePredictions initialNetwork
+    , randomSeed = Random.initialSeed 628318530 |> Random.step Random.independentSeed |> snd
+
     }
