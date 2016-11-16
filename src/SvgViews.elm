@@ -3,15 +3,14 @@ module SvgViews exposing (..)
 import Html exposing (Html)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Constants exposing (colors)
-import Datasets exposing (dataRange)
+import Constants
 
 
 largeChart : Float -> List ( Float, Float, Int ) -> Html.Html a
 largeChart dim data =
     let
         factor =
-            (+) dataRange >> (*) (dim / (dataRange * 2))
+            (+) Constants.dataRange >> (*) (dim / (Constants.dataRange * 2))
 
         normalizedData =
             List.map (\( x, y, c ) -> ( factor x, factor y, c )) data
@@ -21,9 +20,9 @@ largeChart dim data =
 
         fillColor label =
             if label == 1 then
-                colors.positive
+                Constants.colors |> .positive
             else
-                colors.negative
+                Constants.colors |> .negative
 
         toCircle ( x, y, c ) =
             circle [ cx (s x), cy (s y), r (s 3), stroke "white", strokeWidth "1", fillColor c |> fill ] []

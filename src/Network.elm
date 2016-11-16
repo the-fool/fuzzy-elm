@@ -116,7 +116,7 @@ layersFactory seeder layerDims =
     in
         List.scanl
             (\cur prev ->
-                List.scanl (\_ prev' -> (neuronFactory (snd prev') (List.length prev))) ( [], seeder ) [1..cur]
+                List.scanl (\_ prev' -> (neuronFactory (snd prev') (List.length prev + 1))) ( [], seeder ) [1..cur]
                     |> List.drop 1
                     |> List.map fst
             )

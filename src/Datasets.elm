@@ -3,6 +3,7 @@ module Datasets exposing (..)
 import Random.Pcg as Random
 import CanvasViz exposing (density)
 import List.Extra exposing (lift2)
+import Constants
 import Network
 
 
@@ -22,11 +23,6 @@ type alias AggregatedPredictions =
     List (List (List Float))
 
 
-dataRange : Float
-dataRange =
-    5
-
-
 xorData : Random.Seed -> List Point
 xorData seeder =
     let
@@ -37,7 +33,7 @@ xorData seeder =
                 ( x, y, -1 )
 
         padding =
-            0.04
+            Constants.dataRange / 20
 
         pad i =
             if i > 0 then
@@ -46,7 +42,7 @@ xorData seeder =
                 i - padding
 
         data =
-            randomCoords seeder ( -(dataRange - 1), (dataRange + 1) ) 200 |> fst
+            randomCoords seeder ( -(Constants.dataRange - 1), (Constants.dataRange - 1) ) 200 |> fst
     in
         data
             |> List.map (\( x, y ) -> ( pad x, pad y ))
@@ -86,7 +82,7 @@ brutePredictions : Network.Network -> Predictions
 brutePredictions network =
     let
         scaleFun =
-            scale ( 0, density ) ( -dataRange, dataRange )
+            scale ( 0, density ) ( -Constants.dataRange, Constants.dataRange )
 
         scaledInputs =
             List.map scaleFun [0..density]

@@ -3,11 +3,17 @@ module View exposing (..)
 import Html exposing (..)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (class, id, style)
+import String
 import Models exposing (..)
 import Network exposing (..)
 import Update exposing (Msg(..))
 import SvgViews
 import Datasets exposing (xorData)
+
+
+(=>) : a -> b -> ( a, b )
+(=>) =
+    (,)
 
 
 type alias Geometry =
@@ -43,7 +49,8 @@ view : Model -> Html Msg
 view model =
     let
         nonOutputLayers =
-            List.take (List.length model.network.layers - 1) model.network.layers
+            model.network.layers
+                |> List.take (List.length model.network.layers - 1)
 
         maxWidth =
             fst model.window |> wrapperWidth
@@ -52,7 +59,7 @@ view model =
             maxWidth |> toFloat |> (*) x |> truncate
 
         column sz node =
-            div [ class "col", style [ ( "width", factor sz |> px ) ] ] [ node ]
+            div [ class "col", style [ "width" => (px <| factor sz) ] ] [ node ]
 
         ( datasetsWidth, networkWidth, outputWidth ) =
             ( geometry.datasetsPcnt, geometry.networkPcnt, (1 - (geometry.datasetsPcnt + geometry.networkPcnt)) )
@@ -60,7 +67,7 @@ view model =
         div
             [ class "main-wrapper" ]
             [ header
-            , div [ class "ui-wrapper clearfix mx-auto", style [ ( "width", px maxWidth ) ] ]
+            , div [ class "ui-wrapper clearfix mx-auto", style [ "width" => px maxWidth ] ]
                 [ controls model
                 , div [ class "visuals" ]
                     [ column datasetsWidth <| dataSets model
@@ -145,14 +152,14 @@ network networkWidth layers =
             [ class "network-wrapper" ]
             [ div
                 [ class "layer-editor-wrapper"
-                , style [ ( "margin-left", px geometry.boxSize ) ]
+                , style [ "margin-left" => px geometry.boxSize ]
                 ]
                 [ hidden |> viewModLayers
                 , hidden |> viewModNeurons gutter
                 ]
             , div
                 [ class "nodes-wrapper relative"
-                , style [ ( "margin-top", px 30 ) ]
+                , style [ "margin-top" => px 30 ]
                 ]
                 [ entry |> viewEntryLayer
                 , hidden |> viewHiddenLayers gutter
@@ -164,7 +171,15 @@ output : Model -> Html Msg
 output model =
     div
         [ class "ml2" ]
-        [ canvas [ id "output", class "absolute", style [ ( "width", toString geometry.outputBox ), ( "height", toString geometry.outputBox ) ] ] []
+        [ canvas
+            [ id "output"
+            , class "absolute"
+            , style
+                [ "width" => toString geometry.outputBox
+                , "height" => toString geometry.outputBox
+                ]
+            ]
+            []
         , SvgViews.largeChart geometry.outputBox model.inputs
         ]
 
@@ -172,7 +187,10 @@ output model =
 viewModLayers : List Layer -> Html Msg
 viewModLayers layers =
     div
-        [ style [ ( "display", "flex" ), ( "justify-content", "center" ) ]
+        [ style
+            [ "display" => "flex"
+            , "justify-content" => "center"
+            ]
         ]
         [ button
             [ class "btn regular"
@@ -195,13 +213,11 @@ viewModNeurons gutter layers =
             "btn circle" |> class
 
         buttonStyle =
-            List.concat
-                [ square 20
-                , [ ( "padding", px 0 )
-                  , ( "margin-left", px 7 )
-                  , ( "background-color", "grey" )
-                  ]
-                ]
+            square 20
+                ++ [ "padding" => px 0
+                   , "margin-left" => px 7
+                   , "background-color" => "grey"
+                   ]
                 |> style
 
         buttonFaMsg faClass msg =
@@ -210,7 +226,7 @@ viewModNeurons gutter layers =
                 , buttonStyle
                 , onClick msg
                 ]
-                [ i [ class <| "fa " ++ faClass, style [ ( "padding-top", px 1 ) ] ] [] ]
+                [ i [ class <| "fa " ++ faClass, style [ "padding-top" => px 1 ] ] [] ]
 
         numLayers =
             List.length layers
@@ -220,14 +236,17 @@ viewModNeurons gutter layers =
 
         layerControls x =
             div
-                [ style (List.concat [ [ ( "position", "absolute" ) ], position ( spacer x, 0 ) ])
+                [ style
+                    ([ "position" => "absolute" ]
+                        ++ position ( spacer x, 0 )
+                    )
                 ]
                 [ buttonFaMsg "fa-plus" (AddNeuron x)
                 , buttonFaMsg "fa-minus" (RemoveNeuron x)
                 ]
     in
         div
-            [ style [ ( "position", "relative" ) ] ]
+            [ style [ "position" => "relative" ] ]
             (List.map layerControls [1..(numLayers)])
 
 
@@ -267,10 +286,18 @@ viewNeuron x y neuron =
     in
         div
             [ class "absolute border rounded"
-            , style (List.concat [ square geometry.boxSize, position ( dx, dy ), [ ( "color", "green" ) ] ])
+            , style
+                ([ "color" => "green"
+                 , "font-size" => "xx-small"
+                 ]
+                    ++ square geometry.boxSize
+                    ++ position ( dx, dy )
+                )
             ]
-            [ Html.text (toString neuron)
-            , Html.text (toString ( x, y ))
+            [ neuron
+                |> List.map (toString >> String.left 6)
+                |> String.join " "
+                |> Html.text
             ]
 
 
