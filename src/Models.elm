@@ -41,7 +41,7 @@ type alias Point =
 
 initialNetwork : Network
 initialNetwork =
-    Network.networkFactory Sigmoid [ X, Y ] [ 2, 2 ]
+    Network.networkFactory seed0 Sigmoid [ X, Y ] [ 2, 2 ]
 
 
 seed0 : Random.Seed

@@ -28,9 +28,12 @@ type Msg
 port drawCanvas : List ( String, ( Float, Float ), List Int ) -> Cmd msg
 
 
-alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Network -> Network
-alterLayerCount predicate action oldNetwork =
+alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Model -> Network
+alterLayerCount predicate action model =
     let
+        oldNetwork =
+            model.network
+
         oldShape =
             Network.getShape oldNetwork
 
@@ -40,14 +43,17 @@ alterLayerCount predicate action oldNetwork =
             else
                 oldShape
     in
-        { oldNetwork | layers = layersFactory newShape }
+        { oldNetwork | layers = layersFactory model.randomSeed newShape }
 
 
-alterNeuronCount : (Int -> Bool) -> (Int -> Int) -> Int -> Network -> Network
-alterNeuronCount predicate action layerIndex oldNetwork =
+alterNeuronCount : (Int -> Bool) -> (Int -> Int) -> Int -> Model -> Network
+alterNeuronCount predicate action layerIndex model =
     let
+        oldNetwork =
+            model.network
+
         oldShape =
-            Network.getShape oldNetwork
+            Network.getShape model.network
 
         newShape =
             List.indexedMap
@@ -59,7 +65,7 @@ alterNeuronCount predicate action layerIndex oldNetwork =
                 )
                 oldShape
     in
-        { oldNetwork | layers = layersFactory newShape }
+        { oldNetwork | layers = layersFactory model.randomSeed newShape }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -94,7 +100,7 @@ update message model =
                 action =
                     (+) 1
             in
-                { model | network = alterNeuronCount predicate action column model.network } ! []
+                { model | network = alterNeuronCount predicate action column model } ! []
 
         RemoveNeuron column ->
             let
@@ -104,7 +110,7 @@ update message model =
                 action =
                     (+) -1
             in
-                { model | network = alterNeuronCount predicate action column model.network } ! []
+                { model | network = alterNeuronCount predicate action column model } ! []
 
         AddLayer ->
             let
@@ -114,7 +120,7 @@ update message model =
                 action =
                     flip (++) <| [ 1 ]
             in
-                { model | network = alterLayerCount predicate action model.network } ! []
+                { model | network = alterLayerCount predicate action model } ! []
 
         RemoveLayer ->
             let
@@ -128,4 +134,4 @@ update message model =
                         |>
                             List.take
             in
-                { model | network = alterLayerCount predicate action model.network } ! []
+                { model | network = alterLayerCount predicate action model } ! []

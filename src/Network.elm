@@ -1,7 +1,7 @@
 module Network exposing (..)
 
 import Debug
-import Set exposing (Set)
+import Random.Pcg as Random
 
 
 type alias Network =
@@ -20,6 +20,14 @@ type alias EntryNeuron =
 type EntryNeuronType
     = X
     | Y
+
+
+type alias Layer =
+    List Neuron
+
+
+type alias Neuron =
+    List Float
 
 
 getEntryNeuron : EntryNeuronType -> EntryNeuron
@@ -43,18 +51,6 @@ setAllEntryNeurons types =
                 ( getEntryNeuron t, active t )
             )
             [ X, Y ]
-
-
-type alias EntryNeuronConfig =
-    Set String
-
-
-type alias Layer =
-    List Neuron
-
-
-type alias Neuron =
-    List Float
 
 
 
@@ -91,15 +87,28 @@ forwardProp network ( x, y ) =
         List.scanl doLayer firstInputs nonEntryLayers
 
 
-layersFactory : List Int -> List Layer
-layersFactory layerDims =
+neuronFactory : Random.Seed -> Int -> ( List Float, Random.Seed )
+neuronFactory seed numWeights =
+    let
+        gen =
+            Random.float -1 1 |> Random.list numWeights
+    in
+        Random.step gen seed
+
+
+layersFactory : Random.Seed -> List Int -> List Layer
+layersFactory seeder layerDims =
     let
         --Add the output node
         layers =
             List.drop 1 <| (layerDims ++ [ 1 ])
 
-        randomWeights len =
-            List.repeat len 1
+        randomWeights seed len =
+            Random.step
+                (Random.float -1 1
+                    |> Random.list len
+                )
+                seed
 
         entryLayer =
             case List.head layerDims of
@@ -114,20 +123,19 @@ layersFactory layerDims =
     in
         List.scanl
             (\cur prev ->
-                List.length prev
-                    |> randomWeights
-                    |> (::) 1
-                    |> List.repeat cur
+                List.scanl (\_ prev' -> (randomWeights (snd prev') (List.length prev))) ( [], seeder ) [1..cur]
+                    |> List.drop 1
+                    |> List.map fst
             )
             entryLayer
             layers
 
 
-networkFactory : Activation -> List EntryNeuronType -> List Int -> Network
-networkFactory activation entryNeurons layerDims =
+networkFactory : Random.Seed -> Activation -> List EntryNeuronType -> List Int -> Network
+networkFactory seed activation entryNeurons layerDims =
     let
         layers =
-            layersFactory layerDims
+            layersFactory seed layerDims
     in
         if List.head layerDims == Just (List.length entryNeurons) then
             { layers = layers, activation = activation, entryNeurons = (setAllEntryNeurons entryNeurons) }
