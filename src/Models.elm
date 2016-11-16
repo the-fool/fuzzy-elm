@@ -49,18 +49,13 @@ seed0 =
     Random.initialSeed 628318530 |> Random.step Random.independentSeed |> snd
 
 
-initialInputsAndSeed : ( List Point, Random.Seed )
-initialInputsAndSeed =
-    Datasets.xorData seed0
-
-
 initialModel : Model
 initialModel =
     { network = initialNetwork
     , window = ( 1, 1 )
-    , inputs = fst initialInputsAndSeed
+    , inputs = Datasets.xorData seed0
     , state = 0
     , nTicks = 0
     , brutePredictions = Datasets.brutePredictions initialNetwork
-    , randomSeed = snd initialInputsAndSeed
+    , randomSeed = seed0
     }

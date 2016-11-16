@@ -15,8 +15,7 @@ dataRange =
     5
 
 
-
-xorData : Random.Seed -> (List Point, Random.Seed)
+xorData : Random.Seed -> List Point
 xorData seeder =
     let
         label ( x, y ) =
@@ -33,16 +32,16 @@ xorData seeder =
                 i + padding
             else
                 i - padding
-        (data, seed) =
-            randomPairs seeder ( -(dataRange - 1), (dataRange + 1) ) 200
+
+        data =
+            randomPairs seeder ( -(dataRange - 1), (dataRange + 1) ) 200 |> fst
     in
-        (data
+        data
             |> List.map (\( x, y ) -> ( pad x, pad y ))
             |> List.map label
-          , seed)
 
 
-randomPairs : Random.Seed -> ( Float, Float ) -> Int -> (List ( Float, Float ), Random.Seed)
+randomPairs : Random.Seed -> ( Float, Float ) -> Int -> ( List ( Float, Float ), Random.Seed )
 randomPairs seed ( min, max ) len =
     let
         gen =

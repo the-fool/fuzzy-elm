@@ -22,7 +22,7 @@ type Msg
     | Reset
     | Learn Time
     | WindowResize ( Int, Int )
-    | SetInput ( List Point, Random.Seed )
+    | SetInput (List Point)
 
 
 port drawCanvas : List ( String, ( Float, Float ), List Int ) -> Cmd msg
@@ -68,6 +68,16 @@ alterNeuronCount predicate action layerIndex model =
         { oldNetwork | layers = layersFactory model.randomSeed newShape }
 
 
+nextSeed : Random.Seed -> Random.Seed
+nextSeed seed =
+    Random.step Random.bool seed |> snd
+
+
+swapSeed : Model -> Model
+swapSeed model =
+    { model | randomSeed = nextSeed model.randomSeed }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case Debug.log "msg" message of
@@ -77,8 +87,8 @@ update message model =
         WindowResize ( width, height ) ->
             { model | window = ( width, height ) } ! []
 
-        SetInput ( points, seed ) ->
-            { model | inputs = points, randomSeed = seed } ! []
+        SetInput points ->
+            swapSeed { model | inputs = points } ! []
 
         Begin ->
             { model | state = 1 } ! []
@@ -100,7 +110,7 @@ update message model =
                 action =
                     (+) 1
             in
-                { model | network = alterNeuronCount predicate action column model } ! []
+                swapSeed { model | network = alterNeuronCount predicate action column model } ! []
 
         RemoveNeuron column ->
             let
@@ -110,7 +120,7 @@ update message model =
                 action =
                     (+) -1
             in
-                { model | network = alterNeuronCount predicate action column model } ! []
+                swapSeed { model | network = alterNeuronCount predicate action column model } ! []
 
         AddLayer ->
             let
@@ -120,7 +130,7 @@ update message model =
                 action =
                     flip (++) <| [ 1 ]
             in
-                { model | network = alterLayerCount predicate action model } ! []
+                swapSeed { model | network = alterLayerCount predicate action model } ! []
 
         RemoveLayer ->
             let
@@ -134,4 +144,4 @@ update message model =
                         |>
                             List.take
             in
-                { model | network = alterLayerCount predicate action model } ! []
+                swapSeed { model | network = alterLayerCount predicate action model } ! []

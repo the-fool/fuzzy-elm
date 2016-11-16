@@ -103,13 +103,6 @@ layersFactory seeder layerDims =
         layers =
             List.drop 1 <| (layerDims ++ [ 1 ])
 
-        randomWeights seed len =
-            Random.step
-                (Random.float -1 1
-                    |> Random.list len
-                )
-                seed
-
         entryLayer =
             case List.head layerDims of
                 Just n ->
@@ -123,7 +116,7 @@ layersFactory seeder layerDims =
     in
         List.scanl
             (\cur prev ->
-                List.scanl (\_ prev' -> (randomWeights (snd prev') (List.length prev))) ( [], seeder ) [1..cur]
+                List.scanl (\_ prev' -> (neuronFactory (snd prev') (List.length prev))) ( [], seeder ) [1..cur]
                     |> List.drop 1
                     |> List.map fst
             )
