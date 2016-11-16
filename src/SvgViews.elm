@@ -3,7 +3,7 @@ module SvgViews exposing (..)
 import Html exposing (Html)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Models exposing (..)
+import Constants exposing (colors)
 import Datasets exposing (dataRange)
 
 

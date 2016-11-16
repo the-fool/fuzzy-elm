@@ -6,8 +6,20 @@ import List.Extra exposing (lift2)
 import Network
 
 
+type alias Coord =
+    ( Float, Float )
+
+
 type alias Point =
     ( Float, Float, Int )
+
+
+type alias Predictions =
+    List (List (List Float))
+
+
+type alias AggregatedPredictions =
+    List (List (List Float))
 
 
 dataRange : Float
@@ -34,15 +46,15 @@ xorData seeder =
                 i - padding
 
         data =
-            randomPairs seeder ( -(dataRange - 1), (dataRange + 1) ) 200 |> fst
+            randomCoords seeder ( -(dataRange - 1), (dataRange + 1) ) 200 |> fst
     in
         data
             |> List.map (\( x, y ) -> ( pad x, pad y ))
             |> List.map label
 
 
-randomPairs : Random.Seed -> ( Float, Float ) -> Int -> ( List ( Float, Float ), Random.Seed )
-randomPairs seed ( min, max ) len =
+randomCoords : Random.Seed -> Coord -> Int -> ( List Coord, Random.Seed )
+randomCoords seed ( min, max ) len =
     let
         gen =
             Random.pair (Random.float min max) (Random.float min max)
@@ -70,7 +82,7 @@ There will be density ^ 2 points
 --}
 
 
-brutePredictions : Network.Network -> List (List (List Float))
+brutePredictions : Network.Network -> Predictions
 brutePredictions network =
     let
         scaleFun =
@@ -96,7 +108,7 @@ there is the X-length list of predictions
 --}
 
 
-aggregatePredictions : List (List (List Float)) -> List (List (List Float))
+aggregatePredictions : Predictions -> AggregatedPredictions
 aggregatePredictions allPoints =
     let
         shape =

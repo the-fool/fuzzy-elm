@@ -5,14 +5,6 @@ import Datasets
 import Random.Pcg as Random
 
 
-colors : { positive : String, negative : String }
-colors =
-    { negative = "rgb(245, 147, 34)"
-    , positive = "rgb(8, 119, 189)"
-    }
-
-
-
 -- TODO: Write a decode/encode to move union types to localStorage
 
 
@@ -20,23 +12,15 @@ type alias NetworkState =
     Int
 
 
-type alias Predictions =
-    List (List (List Float))
-
-
 type alias Model =
-    { network : Network
+    { network : Network.Network
     , window : ( Int, Int )
-    , inputs : List Point
+    , inputs : List Datasets.Point
     , state : NetworkState
     , nTicks : Int
-    , brutePredictions : Predictions
+    , brutePredictions : Datasets.Predictions
     , randomSeed : Random.Seed
     }
-
-
-type alias Point =
-    ( Float, Float, Int )
 
 
 initialNetwork : Network

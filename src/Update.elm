@@ -1,7 +1,8 @@
 port module Update exposing (..)
 
 import Debug
-import Models exposing (Model, Point)
+import Models exposing (Model)
+import Datasets exposing (Point)
 import Network exposing (..)
 import Time exposing (Time)
 import Random.Pcg as Random
