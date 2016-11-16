@@ -1,7 +1,6 @@
 module Datasets exposing (..)
 
 import Random.Pcg as Random
-import CanvasViz exposing (density)
 import List.Extra exposing (lift2)
 import Constants
 import Network
@@ -15,8 +14,8 @@ type alias Point =
     ( Float, Float, Int )
 
 
-type alias Predictions =
-    List (List (List Float))
+type alias Prediction =
+    List (List Float)
 
 
 type alias AggregatedPredictions =
@@ -78,14 +77,14 @@ There will be density ^ 2 points
 --}
 
 
-brutePredictions : Network.Network -> Predictions
+brutePredictions : Network.Network -> List Prediction
 brutePredictions network =
     let
         scaleFun =
-            scale ( 0, density ) ( -Constants.dataRange, Constants.dataRange )
+            scale ( 0, toFloat Constants.density ) ( -Constants.dataRange, Constants.dataRange )
 
         scaledInputs =
-            List.map scaleFun [0..density]
+            List.map (toFloat >> scaleFun) [0..Constants.density]
 
         points =
             lift2 (\y x -> ( x, y )) scaledInputs scaledInputs
@@ -104,7 +103,7 @@ there is the X-length list of predictions
 --}
 
 
-aggregatePredictions : Predictions -> AggregatedPredictions
+aggregatePredictions : List Prediction -> AggregatedPredictions
 aggregatePredictions allPoints =
     let
         shape =
@@ -114,3 +113,8 @@ aggregatePredictions allPoints =
                    List.concatMap (List.map (List.map (always [])))
     in
         List.foldr (List.map2 (List.map2 (::))) shape allPoints
+
+
+getPredictionGrid : Network.Network -> AggregatedPredictions
+getPredictionGrid =
+    brutePredictions >> aggregatePredictions

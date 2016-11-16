@@ -285,7 +285,8 @@ viewNeuron x y neuron =
             ( x, y * geometry.vertical )
     in
         div
-            [ class "absolute border rounded"
+            [ id <| String.join "-" <| List.map toString [ x, y ]
+            , class "absolute border rounded"
             , style
                 ([ "color" => "green"
                  , "font-size" => "xx-small"

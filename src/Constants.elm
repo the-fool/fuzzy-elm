@@ -11,3 +11,8 @@ colors =
 dataRange : Float
 dataRange =
     5
+
+
+density : Int
+density =
+    20
