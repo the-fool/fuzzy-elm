@@ -1,13 +1,52 @@
 module Network exposing (..)
 
 import Debug
+import Set exposing (Set)
 
 
 type alias Network =
     { layers : List Layer
     , activation : Activation
-    , entryNeurons : List String
+    , entryNeurons : List ( EntryNeuron, Bool )
     }
+
+
+type alias EntryNeuron =
+    { name : String
+    , func : ( Float, Float ) -> Float
+    }
+
+
+type EntryNeuronType
+    = X
+    | Y
+
+
+getEntryNeuron : EntryNeuronType -> EntryNeuron
+getEntryNeuron nt =
+    case nt of
+        X ->
+            { name = "X", func = fst }
+
+        Y ->
+            { name = "Y", func = snd }
+
+
+setAllEntryNeurons : List EntryNeuronType -> List ( EntryNeuron, Bool )
+setAllEntryNeurons types =
+    let
+        active nt =
+            List.member nt types
+    in
+        List.map
+            (\t ->
+                ( getEntryNeuron t, active t )
+            )
+            [ X, Y ]
+
+
+type alias EntryNeuronConfig =
+    Set String
 
 
 type alias Layer =
@@ -84,14 +123,14 @@ layersFactory layerDims =
             layers
 
 
-networkFactory : Activation -> List String -> List Int -> Network
+networkFactory : Activation -> List EntryNeuronType -> List Int -> Network
 networkFactory activation entryNeurons layerDims =
     let
         layers =
             layersFactory layerDims
     in
         if List.head layerDims == Just (List.length entryNeurons) then
-            { layers = layers, activation = activation, entryNeurons = entryNeurons }
+            { layers = layers, activation = activation, entryNeurons = (setAllEntryNeurons entryNeurons) }
         else
             Debug.crash "Entry neuron function list is not the same length as the layer dimension!"
 
@@ -99,7 +138,7 @@ networkFactory activation entryNeurons layerDims =
 processInput : Network -> ( Float, Float ) -> List Float
 processInput network ( x, y ) =
     network.entryNeurons
-        |> List.map (entryNeuronFunctions >> ((|>) ( x, y )))
+        |> List.map (fst >> .func >> ((|>) ( x, y )))
 
 
 getShape : Network -> List Int
@@ -120,35 +159,17 @@ sigmoid : Float -> Float
 sigmoid x =
     1 / (1 + e ^ -x)
 
-type Activation = Sigmoid | Tanh
+
+type Activation
+    = Sigmoid
+    | Tanh
+
 
 activationFunction : Activation -> (Float -> Float)
 activationFunction f =
-  case f of
-    Sigmoid -> sigmoid
-    Tanh -> sigmoid
-
-{--In order to serialize to localStorage, activation function must be stored as a string --}
-
-
-activations : String -> Float -> Float
-activations k =
-    case k of
-        "sigmoid" ->
+    case f of
+        Sigmoid ->
             sigmoid
 
-        _ ->
-            Debug.crash ("Illegal string key " ++ k ++ " for activation function")
-
-
-entryNeuronFunctions : String -> ( Float, Float ) -> Float
-entryNeuronFunctions k =
-    case k of
-        "x" ->
-            \( x, y ) -> x
-
-        "y" ->
-            \( x, y ) -> y
-
-        _ ->
-            Debug.crash "Invalid key for input function!"
+        Tanh ->
+            sigmoid
