@@ -6,6 +6,7 @@ import Network exposing (..)
 import Time exposing (Time)
 import Random.Pcg as Random
 
+
 type alias Column =
     Int
 
@@ -21,7 +22,7 @@ type Msg
     | Reset
     | Learn Time
     | WindowResize ( Int, Int )
-    | SelectInput ((List Point), Random.Seed)
+    | SetInput ( List Point, Random.Seed )
 
 
 port drawCanvas : List ( String, ( Float, Float ), List Int ) -> Cmd msg
@@ -70,7 +71,7 @@ update message model =
         WindowResize ( width, height ) ->
             { model | window = ( width, height ) } ! []
 
-        SelectInput (points, seed) ->
+        SetInput ( points, seed ) ->
             { model | inputs = points, randomSeed = seed } ! []
 
         Begin ->

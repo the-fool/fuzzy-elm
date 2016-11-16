@@ -111,7 +111,7 @@ dataSets model =
         dataSelector ( name, handler ) =
             div
                 [ handler model.randomSeed
-                    |> SelectInput
+                    |> SetInput
                     |> onClick
                 ]
                 [ text name ]
