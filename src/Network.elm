@@ -30,6 +30,11 @@ type alias Neuron =
     List Float
 
 
+type Activation
+    = Sigmoid
+    | Tanh
+
+
 getEntryNeuron : EntryNeuronType -> EntryNeuron
 getEntryNeuron nt =
     case nt of
@@ -159,11 +164,6 @@ dot xs =
 sigmoid : Float -> Float
 sigmoid x =
     1 / (1 + e ^ -x)
-
-
-type Activation
-    = Sigmoid
-    | Tanh
 
 
 activationFunction : Activation -> (Float -> Float)
