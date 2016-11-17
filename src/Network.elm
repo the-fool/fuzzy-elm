@@ -3,8 +3,10 @@ module Network exposing (..)
 import String
 import Debug
 import Random.Pcg as Random
-import Array
+import Array exposing (Array)
+import List.Extra
 import Constants
+
 
 type alias Network =
     { layers : List Layer
@@ -31,7 +33,7 @@ type alias Layer =
 type alias Neuron =
     { id : String
     , weights : List Float
-    , outputs : Array.Array Float
+    , outputs : Array Float
     }
 
 
@@ -39,12 +41,14 @@ type Activation
     = Sigmoid
     | Tanh
 
+
 type alias Prediction =
     List (List Float)
 
 
 type alias AggregatedPredictions =
     List (List (List Float))
+
 
 getEntryNeuron : EntryNeuronType -> EntryNeuron
 getEntryNeuron nt =
@@ -70,13 +74,35 @@ setAllEntryNeurons types =
 
 
 batchPredict : Network -> Network
-batchPredict = identity
+batchPredict network =
+    let
+        activation =
+            activationFunction network.activation
+
+        inputs =
+            Constants.brutePoints
+
+        -- Drop the entry layers, which are dealt with separately
+        layers network =
+            List.drop 1 network.layers
+
+        forwardProp network indexedInput =
+            (List.take 1 network.layers) ++ List.map (\layer -> List.map (doNeuron indexedInput) layer) (layers network)
+
+        doNeuron ( index, incomingVector ) neuron =
+            dot (1 :: incomingVector) neuron.weights
+                |> activation
+                |> \val ->
+                    { neuron | outputs = Array.set index val neuron.outputs }
+    in
+        List.foldl (\( index, input ) network -> { network | layers = forwardProp network ( index, processInput network input ) }) network (List.Extra.zip [0..List.length inputs] inputs)
 
 
 processInput : Network -> ( Float, Float ) -> List Float
 processInput network ( x, y ) =
     network.entryNeurons
         |> List.map (fst >> .func >> ((|>) ( x, y )))
+
 
 
 {--
@@ -188,7 +214,6 @@ networkFactory seed activation entryNeurons layerDims =
             { layers = layers, activation = activation, entryNeurons = (setAllEntryNeurons entryNeurons) }
         else
             Debug.crash "Entry neuron function list is not the same length as the layer dimension!"
-
 
 
 getShape : Network -> List Int
