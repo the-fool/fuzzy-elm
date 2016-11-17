@@ -35,7 +35,7 @@ drawCanvas : Network -> Cmd a
 drawCanvas network =
     let
         msgData =
-            CanvasViz.makeCanvasMessage (Datasets.getPredictionGrid network) "2-0"
+            CanvasViz.makeCanvasMessage (Network.getPredictionGrid network) "2-0"
     in
         canvasMessage { jumboDims = ( Constants.jumboCanvasSize, Constants.jumboCanvasSize ), payload = msgData }
 
@@ -112,7 +112,7 @@ update message model =
             { model | nTicks = 0, state = 0 } ! []
 
         Learn time ->
-            ( { model | nTicks = model.nTicks + 1 }, drawCanvas model.network )
+            ( { model | nTicks = model.nTicks + 1, network = Network.batchPredict model.network }, drawCanvas model.network )
 
         AddNeuron column ->
             let

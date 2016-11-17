@@ -1,7 +1,6 @@
 module Datasets exposing (..)
 
 import Random.Pcg as Random
-import List.Extra exposing (lift2)
 import Constants
 import Network
 
@@ -12,14 +11,6 @@ type alias Coord =
 
 type alias Point =
     ( Float, Float, Int )
-
-
-type alias Prediction =
-    List (List Float)
-
-
-type alias AggregatedPredictions =
-    List (List (List Float))
 
 
 xorData : Random.Seed -> List Point
@@ -56,66 +47,3 @@ randomCoords seed ( min, max ) len =
                 |> Random.list len
     in
         Random.step gen seed
-
-
-scale : ( Float, Float ) -> ( Float, Float ) -> Float -> Float
-scale domain range x =
-    let
-        ( min, max ) =
-            domain
-
-        ( a, b ) =
-            range
-    in
-        (b - a) * (x - min) / (max - min) + a
-
-
-
-{--
-Produce list of network outputs (in the form of matrices) for each input point.
-There will be density ^ 2 points
---}
-
-
-brutePoints =
-    let
-        scaleFun =
-            scale ( 0, toFloat Constants.density ) ( -Constants.dataRange, Constants.dataRange )
-
-        scaledInputs =
-            List.map (toFloat >> scaleFun) [0..(Constants.density - 1)]
-    in
-        lift2 (\y x -> ( x, y )) scaledInputs scaledInputs
-
-
-brutePredictions : Network.Network -> List Prediction
-brutePredictions network =
-    -- The entry layer in this list are bogus
-    List.indexedMap (Network.forwardProp network) brutePoints
-
-
-
-{--
-Ok, this is kind of crazy.  For simplicity, we collect X number of predictions in a list of
-X length, where each element is a jagged 2d array representing the whole network of neurons' separate predictions.
-This list of X separate network-predictions for each data point needs to be folded down to an array
-of the same shape as the network, except insted of neurons for the basic element,
-there is the X-length list of predictions
---}
-
-
-aggregatePredictions : List Prediction -> AggregatedPredictions
-aggregatePredictions allPoints =
-    let
-        shape =
-            -- each element in points has same shape
-            List.take 1 allPoints
-                |> -- replace all the number elements with empty lists to 'seed' the fold
-                   List.concatMap (List.map (List.map (always [])))
-    in
-        List.foldl (List.map2 (List.map2 (::))) shape allPoints
-
-
-getPredictionGrid : Network.Network -> AggregatedPredictions
-getPredictionGrid =
-    brutePredictions >> aggregatePredictions

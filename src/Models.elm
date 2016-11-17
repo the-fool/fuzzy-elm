@@ -18,7 +18,7 @@ type alias Model =
     , inputs : List Datasets.Point
     , state : NetworkState
     , nTicks : Int
-    , brutePredictions : List Datasets.Prediction
+    , brutePredictions : List Network.Prediction
     , randomSeed : Random.Seed
     }
 
@@ -40,6 +40,6 @@ initialModel =
     , inputs = Datasets.xorData seed0
     , state = 0
     , nTicks = 0
-    , brutePredictions = Datasets.brutePredictions initialNetwork
+    , brutePredictions = Network.brutePredictions initialNetwork
     , randomSeed = seed0
     }

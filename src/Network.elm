@@ -39,6 +39,12 @@ type Activation
     = Sigmoid
     | Tanh
 
+type alias Prediction =
+    List (List Float)
+
+
+type alias AggregatedPredictions =
+    List (List (List Float))
 
 getEntryNeuron : EntryNeuronType -> EntryNeuron
 getEntryNeuron nt =
@@ -61,6 +67,11 @@ setAllEntryNeurons types =
                 ( getEntryNeuron t, active t )
             )
             [ X, Y ]
+
+
+batchPredict : Network -> Network
+batchPredict = identity
+
 
 processInput : Network -> ( Float, Float ) -> List Float
 processInput network ( x, y ) =
@@ -207,3 +218,40 @@ activationFunction f =
 
         Tanh ->
             sigmoid
+
+
+
+-- Batch Predictions --
+
+
+brutePredictions : Network -> List Prediction
+brutePredictions network =
+    -- The entry layer in this list are bogus
+    List.indexedMap (forwardProp network) Constants.brutePoints
+
+
+
+{--
+Ok, this is kind of crazy.  For simplicity, we collect X number of predictions in a list of
+X length, where each element is a jagged 2d array representing the whole network of neurons' separate predictions.
+This list of X separate network-predictions for each data point needs to be folded down to an array
+of the same shape as the network, except insted of neurons for the basic element,
+there is the X-length list of predictions
+--}
+
+
+aggregatePredictions : List Prediction -> AggregatedPredictions
+aggregatePredictions allPoints =
+    let
+        shape =
+            -- each element in points has same shape
+            List.take 1 allPoints
+                |> -- replace all the number elements with empty lists to 'seed' the fold
+                   List.concatMap (List.map (List.map (always [])))
+    in
+        List.foldl (List.map2 (List.map2 (::))) shape allPoints
+
+
+getPredictionGrid : Network -> AggregatedPredictions
+getPredictionGrid =
+    brutePredictions >> aggregatePredictions
