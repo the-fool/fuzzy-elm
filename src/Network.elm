@@ -3,7 +3,8 @@ module Network exposing (..)
 import String
 import Debug
 import Random.Pcg as Random
-
+import Array
+import Constants
 
 type alias Network =
     { layers : List Layer
@@ -30,6 +31,7 @@ type alias Layer =
 type alias Neuron =
     { id : String
     , weights : List Float
+    , outputs : Array.Array Float
     }
 
 
@@ -60,6 +62,10 @@ setAllEntryNeurons types =
             )
             [ X, Y ]
 
+processInput : Network -> ( Float, Float ) -> List Float
+processInput network ( x, y ) =
+    network.entryNeurons
+        |> List.map (fst >> .func >> ((|>) ( x, y )))
 
 
 {--
@@ -68,8 +74,8 @@ That is why the list operation is a scan
 --}
 
 
-forwardProp : Network -> ( Float, Float ) -> List (List Float)
-forwardProp network ( x, y ) =
+forwardProp : Network -> Int -> ( Float, Float ) -> List (List Float)
+forwardProp network index ( x, y ) =
     let
         activation =
             activationFunction network.activation
@@ -156,7 +162,7 @@ layersFactory seeder layerDims =
                 layers
 
         neuronFactory id weights =
-            { id = id, weights = weights }
+            { id = id, weights = weights, outputs = (0 |> Array.repeat (Constants.density ^ 2)) }
     in
         gridPrism neuronFactory weightsGrid
 
@@ -172,11 +178,6 @@ networkFactory seed activation entryNeurons layerDims =
         else
             Debug.crash "Entry neuron function list is not the same length as the layer dimension!"
 
-
-processInput : Network -> ( Float, Float ) -> List Float
-processInput network ( x, y ) =
-    network.entryNeurons
-        |> List.map (fst >> .func >> ((|>) ( x, y )))
 
 
 getShape : Network -> List Int

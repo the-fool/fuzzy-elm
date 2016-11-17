@@ -91,7 +91,7 @@ brutePoints =
 brutePredictions : Network.Network -> List Prediction
 brutePredictions network =
     -- The entry layer in this list are bogus
-    List.map (Network.forwardProp network) brutePoints
+    List.indexedMap (Network.forwardProp network) brutePoints
 
 
 
