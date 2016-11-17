@@ -35,7 +35,7 @@ drawCanvas : Network -> Cmd a
 drawCanvas network =
     let
         msgData =
-            CanvasViz.makeCanvasMessage (Network.getPredictionGrid network) "2-0"
+            CanvasViz.canvasMessage (network) "2-0"
     in
         canvasMessage { jumboDims = ( Constants.jumboCanvasSize, Constants.jumboCanvasSize ), payload = msgData }
 

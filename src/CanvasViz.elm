@@ -1,7 +1,6 @@
 module CanvasViz exposing (..)
 
-import Datasets
-import Network
+import Network exposing (Network)
 import List.Extra
 import String
 
@@ -18,7 +17,7 @@ type alias CanvasMessage =
     { output : List Int, neurons : List NeuronDatum }
 
 
-makeCanvasMessage : Datasets.AggregatedPredictions -> String -> CanvasMessage
+makeCanvasMessage : Network.AggregatedPredictions -> String -> CanvasMessage
 makeCanvasMessage predictions jumboID =
     let
         neurons =
@@ -35,6 +34,11 @@ makeCanvasMessage predictions jumboID =
         { output = output, neurons = neurons }
 
 
+canvasMessage : Network -> String -> CanvasMessage
+canvasMessage a b =
+    { output = [], neurons = [] }
+
+
 toCanvasData : RgbaGrid -> List NeuronDatum
 toCanvasData grid =
     let
@@ -44,7 +48,7 @@ toCanvasData grid =
         Network.gridPrism idDataRecorder grid |> List.concat
 
 
-toRgba : Datasets.AggregatedPredictions -> RgbaGrid
+toRgba : Network.AggregatedPredictions -> RgbaGrid
 toRgba =
     let
         opacity =
