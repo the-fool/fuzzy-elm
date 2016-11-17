@@ -1,5 +1,6 @@
 module Network exposing (..)
 
+import String
 import Debug
 import Random.Pcg as Random
 
@@ -27,7 +28,9 @@ type alias Layer =
 
 
 type alias Neuron =
-    List Float
+    { id : String
+    , weights : List Float
+    }
 
 
 type Activation
@@ -82,8 +85,8 @@ forwardProp network ( x, y ) =
         firstInputs =
             processInput network ( x, y )
 
-        doNeuron incoming weights =
-            dot (1 :: incoming) weights
+        doNeuron incoming neuron =
+            dot (1 :: incoming) neuron.weights
                 |> activation
 
         doLayer layer incoming =
@@ -92,13 +95,36 @@ forwardProp network ( x, y ) =
         List.scanl doLayer firstInputs nonEntryLayers
 
 
-neuronFactory : Random.Seed -> Int -> ( List Float, Random.Seed )
-neuronFactory seed numWeights =
+weightsFactory : Random.Seed -> Int -> ( List Float, Random.Seed )
+weightsFactory seed numWeights =
     let
         gen =
             Random.float -1 1 |> Random.list numWeights
     in
         Random.step gen seed
+
+
+
+{-
+   A grid of neurons go in, a grid of neurons come out
+   This is used to transform a simple neuron (e.g. an array of weights),
+   into a record with a string id and something else (e.g. {id: String, weights: List Float})
+   It is also used to transform the predictions grid into a record with an id field
+-}
+
+
+gridPrism : (String -> a -> b) -> List (List a) -> List (List b)
+gridPrism recordFactory networkGrid =
+    let
+        idMaker ( layerIdx, rowIdx ) =
+            List.map toString [ layerIdx, rowIdx ] |> String.join "-"
+    in
+        List.indexedMap
+            (\layerIdx ->
+                List.indexedMap
+                    (\rowIdx weights -> recordFactory (idMaker ( layerIdx, rowIdx )) weights)
+            )
+            networkGrid
 
 
 layersFactory : Random.Seed -> List Int -> List Layer
@@ -118,15 +144,21 @@ layersFactory seeder layerDims =
 
                 Nothing ->
                     Debug.crash "No entry layer"
+
+        weightsGrid =
+            List.scanl
+                (\cur prev ->
+                    List.scanl (\_ prev' -> (weightsFactory (snd prev') (List.length prev + 1))) ( [], seeder ) [0..(cur - 1)]
+                        |> List.drop 1
+                        |> List.map fst
+                )
+                entryLayer
+                layers
+
+        neuronFactory id weights =
+            { id = id, weights = weights }
     in
-        List.scanl
-            (\cur prev ->
-                List.scanl (\_ prev' -> (neuronFactory (snd prev') (List.length prev + 1))) ( [], seeder ) [1..cur]
-                    |> List.drop 1
-                    |> List.map fst
-            )
-            entryLayer
-            layers
+        gridPrism neuronFactory weightsGrid
 
 
 networkFactory : Random.Seed -> Activation -> List EntryNeuronType -> List Int -> Network

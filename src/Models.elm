@@ -18,7 +18,7 @@ type alias Model =
     , inputs : List Datasets.Point
     , state : NetworkState
     , nTicks : Int
-    , brutePredictions : Datasets.Predictions
+    , brutePredictions : List Datasets.Prediction
     , randomSeed : Random.Seed
     }
 

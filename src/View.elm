@@ -285,7 +285,7 @@ viewNeuron x y neuron =
             ( x, y * geometry.vertical )
     in
         div
-            [ id <| String.join "-" <| List.map toString [ x, y ]
+            [ id neuron.id
             , class "absolute border rounded"
             , style
                 ([ "color" => "green"
@@ -295,7 +295,7 @@ viewNeuron x y neuron =
                     ++ position ( dx, dy )
                 )
             ]
-            [ neuron
+            [ neuron.weights
                 |> List.map (toString >> String.left 6)
                 |> String.join " "
                 |> Html.text
