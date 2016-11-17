@@ -3,6 +3,7 @@ module CanvasViz exposing (..)
 import Datasets
 import Network
 import List.Extra
+import String
 
 
 type alias RgbaGrid =
@@ -13,7 +14,11 @@ type alias NeuronDatum =
     { id : String, data : List Int }
 
 
-makeCanvasMessage : Datasets.AggregatedPredictions -> String -> { output : List Int, neurons : List NeuronDatum }
+type alias CanvasMessage =
+    { output : List Int, neurons : List NeuronDatum }
+
+
+makeCanvasMessage : Datasets.AggregatedPredictions -> String -> CanvasMessage
 makeCanvasMessage predictions jumboID =
     let
         neurons =
@@ -25,7 +30,7 @@ makeCanvasMessage predictions jumboID =
                     item.data
 
                 Nothing ->
-                    Debug.crash "Unfound ID for jumbo neuron!"
+                    Debug.crash ("Unfound ID for jumbo neuron!  Id: " ++ jumboID ++ "Neurons: " ++ (String.join " " (List.map (.id) neurons)))
     in
         { output = output, neurons = neurons }
 

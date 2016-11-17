@@ -1,11 +1,13 @@
 port module Update exposing (..)
 
 import Debug
+import Constants
 import Models exposing (Model)
 import Datasets exposing (Point)
 import Network exposing (..)
 import Time exposing (Time)
 import Random.Pcg as Random
+import CanvasViz
 
 
 type alias Column =
@@ -26,7 +28,16 @@ type Msg
     | SetInput (List Point)
 
 
-port drawCanvas : List ( String, ( Float, Float ), List Int ) -> Cmd msg
+port canvasMessage : { jumboDims : ( Int, Int ), payload : CanvasViz.CanvasMessage } -> Cmd msg
+
+
+drawCanvas : Network -> Cmd a
+drawCanvas network =
+    let
+        msgData =
+            CanvasViz.makeCanvasMessage (Datasets.getPredictionGrid network) "2-0"
+    in
+        canvasMessage { jumboDims = ( Constants.jumboCanvasSize, Constants.jumboCanvasSize ), payload = msgData }
 
 
 alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Model -> Network
@@ -101,7 +112,7 @@ update message model =
             { model | nTicks = 0, state = 0 } ! []
 
         Learn time ->
-            ( { model | nTicks = model.nTicks + 1 }, drawCanvas [ ( "foo", ( 300, 300 ), [ 1, 2, 3 ] ) ] )
+            ( { model | nTicks = model.nTicks + 1 }, drawCanvas model.network )
 
         AddNeuron column ->
             let

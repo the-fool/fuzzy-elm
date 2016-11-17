@@ -15,4 +15,9 @@ dataRange =
 
 density : Int
 density =
-    20
+    10
+
+
+jumboCanvasSize : Int
+jumboCanvasSize =
+    100

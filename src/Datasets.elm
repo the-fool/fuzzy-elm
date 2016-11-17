@@ -84,13 +84,13 @@ brutePredictions network =
             scale ( 0, toFloat Constants.density ) ( -Constants.dataRange, Constants.dataRange )
 
         scaledInputs =
-            List.map (toFloat >> scaleFun) [0..Constants.density]
+            List.map (toFloat >> scaleFun) [0..(Constants.density - 1)]
 
         points =
             lift2 (\y x -> ( x, y )) scaledInputs scaledInputs
     in
-        -- Drop 1 to ignore the original input element
-        List.map ((Network.forwardProp network) >> (List.drop 1)) points
+        -- The entry layer in this list are bogus
+        List.map (Network.forwardProp network) points
 
 
 
@@ -112,7 +112,7 @@ aggregatePredictions allPoints =
                 |> -- replace all the number elements with empty lists to 'seed' the fold
                    List.concatMap (List.map (List.map (always [])))
     in
-        List.foldr (List.map2 (List.map2 (::))) shape allPoints
+        List.foldl (List.map2 (List.map2 (::))) shape allPoints
 
 
 getPredictionGrid : Network.Network -> AggregatedPredictions
