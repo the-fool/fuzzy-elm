@@ -77,20 +77,21 @@ There will be density ^ 2 points
 --}
 
 
-brutePredictions : Network.Network -> List Prediction
-brutePredictions network =
+brutePoints =
     let
         scaleFun =
             scale ( 0, toFloat Constants.density ) ( -Constants.dataRange, Constants.dataRange )
 
         scaledInputs =
             List.map (toFloat >> scaleFun) [0..(Constants.density - 1)]
-
-        points =
-            lift2 (\y x -> ( x, y )) scaledInputs scaledInputs
     in
-        -- The entry layer in this list are bogus
-        List.map (Network.forwardProp network) points
+        lift2 (\y x -> ( x, y )) scaledInputs scaledInputs
+
+
+brutePredictions : Network.Network -> List Prediction
+brutePredictions network =
+    -- The entry layer in this list are bogus
+    List.map (Network.forwardProp network) brutePoints
 
 
 
