@@ -80,22 +80,51 @@ batchPredict network =
             activationFunction network.activation
 
         inputs =
-            Constants.brutePoints
+            Constants.indexedBrutePoints
 
-        -- Drop the entry layers, which are dealt with separately
-        layers network =
-            List.drop 1 network.layers
+        getPreviousVector : Layer -> Int -> List Float
+        getPreviousVector layer index =
+            List.map
+                (\neuron ->
+                    case Array.get (index) neuron.outputs of
+                        Just v ->
+                            v
 
-        forwardProp network indexedInput =
-            (List.take 1 network.layers) ++ List.map (\layer -> List.map (doNeuron indexedInput) layer) (layers network)
+                        Nothing ->
+                            Debug.crash "Previous getter"
+                )
+                layer
+
+        calcEntryLayer : ( Int, ( Float, Float ) ) -> Layer
+        calcEntryLayer ( index, input ) =
+            case List.head network.layers of
+                Just entryLayer ->
+                    List.map2 (\neuron entry -> { neuron | outputs = Array.set index (entry |> fst >> .func >> ((|>) input)) neuron.outputs }) entryLayer (List.filter snd network.entryNeurons)
+
+                Nothing ->
+                    Debug.crash "Empty network!"
+
+        forwardProp : ( Int, ( Float, Float ) ) -> List Layer -> List Layer
+        forwardProp ( index, input ) layers =
+            List.drop 1 layers
+                |> List.scanl
+                    (\layer previousLayer ->
+                        List.map (doNeuron ( index, getPreviousVector previousLayer index )) layer
+                    )
+                    (calcEntryLayer
+                        ( index, input )
+                    )
 
         doNeuron ( index, incomingVector ) neuron =
             dot (1 :: incomingVector) neuron.weights
                 |> activation
                 |> \val ->
                     { neuron | outputs = Array.set index val neuron.outputs }
+
+        doLayers =
+            List.foldl forwardProp network.layers inputs
     in
-        List.foldl (\( index, input ) network -> { network | layers = forwardProp network ( index, processInput network input ) }) network (List.Extra.zip [0..List.length inputs] inputs)
+        { network | layers = doLayers }
 
 
 processInput : Network -> ( Float, Float ) -> List Float
