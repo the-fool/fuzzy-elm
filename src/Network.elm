@@ -4,7 +4,6 @@ import String
 import Debug
 import Random.Pcg as Random
 import Array exposing (Array)
-import List.Extra
 import Constants
 
 
@@ -66,11 +65,19 @@ setAllEntryNeurons types =
         active nt =
             List.member nt types
     in
-        List.map
-            (\t ->
-                ( getEntryNeuron t, active t )
-            )
-            [ X, Y ]
+        [ X, Y ]
+            |> List.map
+                (\t ->
+                    ( getEntryNeuron t, active t )
+                )
+
+
+
+{-
+   For memory efficieny, batchPredict uses slab-allocation of Arrays for neuron outputs.
+   Rather than producing new lists through maps, the algorithm runs setters and getters on a pre-existing array.
+   The reduction in garbage collection cause a 2x speed-up!
+-}
 
 
 batchPredict : Network -> Network
@@ -84,16 +91,16 @@ batchPredict network =
 
         getPreviousVector : Layer -> Int -> List Float
         getPreviousVector layer index =
-            List.map
-                (\neuron ->
-                    case Array.get (index) neuron.outputs of
-                        Just v ->
-                            v
+            layer
+                |> List.map
+                    (\neuron ->
+                        case Array.get (index) neuron.outputs of
+                            Just v ->
+                                v
 
-                        Nothing ->
-                            Debug.crash "Previous getter"
-                )
-                layer
+                            Nothing ->
+                                Debug.crash "Previous getter"
+                    )
 
         calcEntryLayer : ( Int, ( Float, Float ) ) -> Layer
         calcEntryLayer ( index, input ) =
@@ -109,11 +116,9 @@ batchPredict network =
             List.drop 1 layers
                 |> List.scanl
                     (\layer previousLayer ->
-                        List.map (doNeuron ( index, getPreviousVector previousLayer index )) layer
+                        (List.map << doNeuron <| ( index, getPreviousVector previousLayer index )) layer
                     )
-                    (calcEntryLayer
-                        ( index, input )
-                    )
+                    (calcEntryLayer ( index, input ))
 
         doNeuron ( index, incomingVector ) neuron =
             dot (1 :: incomingVector) neuron.weights
@@ -238,9 +243,26 @@ networkFactory seed activation entryNeurons layerDims =
     let
         layers =
             layersFactory seed layerDims
+
+        entryNeuronConfig =
+            setAllEntryNeurons entryNeurons
+
+        entryLayer : List Neuron
+        entryLayer =
+            case List.head layers of
+                Just entryNeuronRecords ->
+                    List.map2
+                        (\neuron entry ->
+                            { neuron | outputs = Array.map (\point -> entry |> fst >> .func >> ((|>) point)) (Array.fromList Constants.brutePoints) }
+                        )
+                        entryNeuronRecords
+                        (List.filter snd entryNeuronConfig)
+
+                Nothing ->
+                    Debug.crash "Empty network!"
     in
         if List.head layerDims == Just (List.length entryNeurons) then
-            { layers = layers, activation = activation, entryNeurons = (setAllEntryNeurons entryNeurons) }
+            { layers = entryLayer :: (List.drop 1 layers), activation = activation, entryNeurons = entryNeuronConfig }
         else
             Debug.crash "Entry neuron function list is not the same length as the layer dimension!"
 
