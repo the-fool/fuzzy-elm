@@ -87,7 +87,11 @@ setAllEntryNeurons types =
                     { func = entryFunction t
                     , active = active t
                     , name = entryName t
-                    , neuron = { outputs = Array.map (entryFunction t) (Array.fromList Constants.brutePoints), id = entryName t, weights = [ 0.0 ] }
+                    , neuron =
+                        { outputs = Array.map (entryFunction t) (Array.fromList Constants.brutePoints)
+                        , id = entryName t
+                        , weights = [ 0.0 ]
+                        }
                     }
                 )
 
@@ -140,46 +144,6 @@ batchPredict network =
             List.foldl forwardProp network.layers (List.range 0 (List.length Constants.brutePoints - 1))
     in
         { network | layers = doLayers }
-
-
-processInput : Network -> ( Float, Float ) -> List Float
-processInput network ( x, y ) =
-    network.entryNeurons
-        |> List.map (.func >> ((|>) ( x, y )))
-
-
-
-{--
-Returns a matrix representing the output of every node in the network.
-That is why the list operation is a scan
---}
-
-
-forwardProp : Network -> Int -> ( Float, Float ) -> List (List Float)
-forwardProp network index ( x, y ) =
-    let
-        activation =
-            activationFunction network.activation
-
-        nonEntryLayers =
-            case List.tail network.layers of
-                Just layers ->
-                    layers
-
-                Nothing ->
-                    Debug.crash "No layers found in network!"
-
-        firstInputs =
-            processInput network ( x, y )
-
-        doNeuron incoming neuron =
-            dot (1 :: incoming) neuron.weights
-                |> activation
-
-        doLayer layer incoming =
-            List.map (doNeuron incoming) layer
-    in
-        List.scanl doLayer firstInputs nonEntryLayers
 
 
 weightsFactory : Random.Seed -> Int -> ( List Float, Random.Seed )
@@ -303,40 +267,3 @@ activationFunction f =
 
         Tanh ->
             sigmoid
-
-
-
--- Batch Predictions --
-
-
-brutePredictions : Network -> List Prediction
-brutePredictions network =
-    -- The entry layer in this list are bogus
-    List.indexedMap (forwardProp network) Constants.brutePoints
-
-
-
-{--
-Ok, this is kind of crazy.  For simplicity, we collect X number of predictions in a list of
-X length, where each element is a jagged 2d array representing the whole network of neurons' separate predictions.
-This list of X separate network-predictions for each data point needs to be folded down to an array
-of the same shape as the network, except insted of neurons for the basic element,
-there is the X-length list of predictions
---}
-
-
-aggregatePredictions : List Prediction -> AggregatedPredictions
-aggregatePredictions allPoints =
-    let
-        shape =
-            -- each element in points has same shape
-            List.take 1 allPoints
-                |> -- replace all the number elements with empty lists to 'seed' the fold
-                   List.concatMap (List.map (List.map (always [])))
-    in
-        List.foldl (List.map2 (List.map2 (::))) shape allPoints
-
-
-getPredictionGrid : Network -> AggregatedPredictions
-getPredictionGrid =
-    brutePredictions >> aggregatePredictions
