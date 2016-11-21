@@ -2,7 +2,6 @@ module Datasets exposing (..)
 
 import Random.Pcg as Random
 import Constants
-import Network
 
 
 type alias Coord =
@@ -10,7 +9,7 @@ type alias Coord =
 
 
 type alias Point =
-    ( Float, Float, Int )
+    { coord : Coord, label : Int }
 
 
 xorData : Random.Seed -> List Point
@@ -18,9 +17,9 @@ xorData seeder =
     let
         label ( x, y ) =
             if (x * y) >= 0 then
-                ( x, y, 1 )
+                { coord = ( x, y ), label = 1 }
             else
-                ( x, y, -1 )
+                { coord = ( x, y ), label = -1 }
 
         padding =
             Constants.dataRange / 20
