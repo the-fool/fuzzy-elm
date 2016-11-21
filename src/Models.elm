@@ -24,7 +24,7 @@ type alias Model =
 
 initialNetwork : Network
 initialNetwork =
-    Network.networkFactory seed0 Sigmoid [ X, Y ] [ 2, 2 ]
+    Network.networkFactory seed0 Tanh [ X, Y ] [ 2, 2 ]
 
 
 seed0 : Random.Seed

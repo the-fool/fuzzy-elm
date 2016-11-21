@@ -35,7 +35,7 @@ brutePoints =
             scale ( 0, toFloat density ) ( -dataRange, dataRange )
 
         scaledInputs =
-            Debug.log "Brute!" List.map (toFloat >> scaleFun) (List.range 0 (density - 1))
+            List.map (toFloat >> scaleFun) (List.range 0 (density - 1))
     in
         lift2 (\y x -> ( x, y )) scaledInputs scaledInputs
 

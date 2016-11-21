@@ -7,6 +7,6 @@ services:
     container_name: elm-fuzz
     command: npm start
     ports:
-      - '3000:3000'
+      - '3003:3003'
     volumes:
       - .:/app

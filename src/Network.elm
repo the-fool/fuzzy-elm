@@ -197,14 +197,23 @@ layersFactory seeder layerDims =
                     Debug.crash "No entry layer"
 
         weightsGrid =
-            List.scanl
-                (\cur prev ->
-                    List.scanl (\_ prev_ -> (weightsFactory (Tuple.second prev_) (List.length prev + 1))) ( [], seeder ) (List.range 0 (cur - 1))
-                        |> List.drop 1
-                        |> List.map Tuple.first
-                )
-                entryLayer
-                layers
+            layers
+                |> List.scanl
+                    (\cur prev ->
+                        List.scanl
+                            (\_ prev_ ->
+                                (weightsFactory (Tuple.second prev_) (List.length prev + 1))
+                            )
+                            ( [], seeder )
+                            (List.range 0 (cur - 1))
+                            -- remove the initial seed entry
+                            |>
+                                List.drop 1
+                            -- trim off the random seeds, leave just the lists of neurons
+                            |>
+                                List.map Tuple.first
+                    )
+                    entryLayer
 
         neuronFactory id weights =
             { id = id, weights = weights, outputs = (0 |> Array.repeat (Constants.density ^ 2)) }
@@ -220,22 +229,9 @@ networkFactory seed activation entryNeurons layerDims =
 
         entryNeuronConfig =
             setAllEntryNeurons entryNeurons
-
-        entryLayer =
-            case List.head layers of
-                Just entryNeuronRecords ->
-                    List.map2
-                        (\neuron entry ->
-                            { neuron | outputs = Array.map (\point -> entry |> .func >> ((|>) point)) (Array.fromList Constants.brutePoints) }
-                        )
-                        entryNeuronRecords
-                        (List.filter .active entryNeuronConfig)
-
-                Nothing ->
-                    Debug.crash "Empty network!"
     in
         if List.head layerDims == Just (List.length entryNeurons) then
-            { layers = entryLayer :: (List.drop 1 layers), activation = activation, entryNeurons = entryNeuronConfig }
+            { layers = layers, activation = activation, entryNeurons = entryNeuronConfig }
         else
             Debug.crash "Entry neuron function list is not the same length as the layer dimension!"
 
@@ -259,6 +255,15 @@ sigmoid x =
     1 / (1 + e ^ -x)
 
 
+tanh : Float -> Float
+tanh x =
+    let
+        e2x =
+            e ^ (2 * x)
+    in
+        (e2x - 1) / (e2x + 1)
+
+
 activationFunction : Activation -> (Float -> Float)
 activationFunction f =
     case f of
@@ -266,4 +271,4 @@ activationFunction f =
             sigmoid
 
         Tanh ->
-            sigmoid
+            tanh
