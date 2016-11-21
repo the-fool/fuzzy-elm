@@ -10,13 +10,15 @@ import Constants
 type alias Network =
     { layers : List Layer
     , activation : Activation
-    , entryNeurons : List ( EntryNeuron, Bool )
+    , entryNeurons : List EntryNeuron
     }
 
 
 type alias EntryNeuron =
     { name : String
     , func : ( Float, Float ) -> Float
+    , active : Bool
+    , outputs : Array Float
     }
 
 
@@ -49,17 +51,27 @@ type alias AggregatedPredictions =
     List (List (List Float))
 
 
-getEntryNeuron : EntryNeuronType -> EntryNeuron
-getEntryNeuron nt =
+entryFunction : EntryNeuronType -> (( a, a ) -> a)
+entryFunction nt =
     case nt of
         X ->
-            { name = "X", func = fst }
+            fst
 
         Y ->
-            { name = "Y", func = snd }
+            snd
 
 
-setAllEntryNeurons : List EntryNeuronType -> List ( EntryNeuron, Bool )
+entryName : EntryNeuronType -> String
+entryName nt =
+    case nt of
+        X ->
+            "X"
+
+        Y ->
+            "Y"
+
+
+setAllEntryNeurons : List EntryNeuronType -> List EntryNeuron
 setAllEntryNeurons types =
     let
         active nt =
@@ -68,7 +80,11 @@ setAllEntryNeurons types =
         [ X, Y ]
             |> List.map
                 (\t ->
-                    ( getEntryNeuron t, active t )
+                    { func = entryFunction t
+                    , active = active t
+                    , name = entryName t
+                    , outputs = Array.map (entryFunction t) (Array.fromList Constants.brutePoints)
+                    }
                 )
 
 
@@ -106,7 +122,7 @@ batchPredict network =
         calcEntryLayer ( index, input ) =
             case List.head network.layers of
                 Just entryLayer ->
-                    List.map2 (\neuron entry -> { neuron | outputs = Array.set index (entry |> fst >> .func >> ((|>) input)) neuron.outputs }) entryLayer (List.filter snd network.entryNeurons)
+                    List.map2 (\neuron entry -> { neuron | outputs = Array.set index (entry |> .func >> ((|>) input)) neuron.outputs }) entryLayer (List.filter .active network.entryNeurons)
 
                 Nothing ->
                     Debug.crash "Empty network!"
@@ -135,7 +151,7 @@ batchPredict network =
 processInput : Network -> ( Float, Float ) -> List Float
 processInput network ( x, y ) =
     network.entryNeurons
-        |> List.map (fst >> .func >> ((|>) ( x, y )))
+        |> List.map (.func >> ((|>) ( x, y )))
 
 
 
@@ -247,16 +263,15 @@ networkFactory seed activation entryNeurons layerDims =
         entryNeuronConfig =
             setAllEntryNeurons entryNeurons
 
-        entryLayer : List Neuron
         entryLayer =
             case List.head layers of
                 Just entryNeuronRecords ->
                     List.map2
                         (\neuron entry ->
-                            { neuron | outputs = Array.map (\point -> entry |> fst >> .func >> ((|>) point)) (Array.fromList Constants.brutePoints) }
+                            { neuron | outputs = Array.map (\point -> entry |> .func >> ((|>) point)) (Array.fromList Constants.brutePoints) }
                         )
                         entryNeuronRecords
-                        (List.filter snd entryNeuronConfig)
+                        (List.filter .active entryNeuronConfig)
 
                 Nothing ->
                     Debug.crash "Empty network!"
