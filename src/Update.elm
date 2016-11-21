@@ -28,16 +28,12 @@ type Msg
     | SetInput (List Point)
 
 
-port canvasMessage : { jumboDims : ( Int, Int ), payload : CanvasViz.CanvasMessage } -> Cmd msg
+port canvasMessage : { jumboDims : ( Int, Int ), payload : List Layer } -> Cmd msg
 
 
 drawCanvas : Network -> Cmd a
 drawCanvas network =
-    let
-        msgData =
-            CanvasViz.canvasMessage (network) "2-0"
-    in
-        canvasMessage { jumboDims = ( Constants.jumboCanvasSize, Constants.jumboCanvasSize ), payload = msgData }
+    canvasMessage { jumboDims = ( Constants.jumboCanvasSize, Constants.jumboCanvasSize ), payload = network.layers }
 
 
 alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Model -> Network

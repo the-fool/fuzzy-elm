@@ -5,24 +5,29 @@ require('font-awesome/css/font-awesome.css');
 
 // Require index.html so it gets copied to dist
 require('./index.html');
+import { drawCanvases } from './canvas';
 
-var Elm = require('./Main.elm');
-var mountNode = document.getElementById('main');
 
-var storedState = localStorage.getItem('elm-todo-save');
-var startingState = storedState ? JSON.parse(storedState) : null;
+
+const Elm = require('./Main.elm');
+const mountNode = document.getElementById('main');
+
+const storedState = localStorage.getItem('elm-todo-save');
+const startingState = storedState ? JSON.parse(storedState) : null;
+
 /*
-var brain = Elm.Main.fullscreen(startingState);
+const brain = Elm.Main.fullscreen(startingState);
 
 brain.ports.setStorage.subscribe(function(state) {
     localStorage.setItem('elm-todo-save', JSON.stringify(state));
 });
 */
 
-var brain = Elm.Main.fullscreen();
+const brain = Elm.Main.fullscreen();
 console.log(brain);
 brain.ports.canvasMessage.subscribe(function(data) {
   console.log(data);
+  drawCanvases(data.payload);
 });
 // The third value on embed are the initial values for incomming ports into Elm
-//var app = Elm.Main.embed(mountNode);
+//const app = Elm.Main.embed(mountNode);

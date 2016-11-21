@@ -6,11 +6,11 @@ import Svg.Attributes exposing (..)
 import Constants
 
 
-largeChart : Float -> List ( Float, Float, Int ) -> Html.Html a
+largeChart : Int -> List ( Float, Float, Int ) -> Html.Html a
 largeChart dim data =
     let
         factor =
-            (+) Constants.dataRange >> (*) (dim / (Constants.dataRange * 2))
+            (+) Constants.dataRange >> (*) (toFloat dim / (Constants.dataRange * 2))
 
         normalizedData =
             List.map (\( x, y, c ) -> ( factor x, factor y, c )) data

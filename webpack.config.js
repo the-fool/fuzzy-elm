@@ -15,6 +15,15 @@ module.exports = {
   module: {
     loaders: [
       {
+        test: /\.js$/,
+        include: [path.resolve(__dirname, 'src')],
+        exclude: /node_modules/,
+        loader: 'babel-loader',
+        query: {
+          presets: ['es2015']
+        }
+      },
+      {
         test: /\.(css|scss)$/,
         loaders: [
           'style-loader',

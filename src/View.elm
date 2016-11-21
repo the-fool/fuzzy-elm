@@ -9,6 +9,7 @@ import Network exposing (..)
 import Update exposing (Msg(..))
 import SvgViews
 import Datasets exposing (xorData)
+import Constants
 
 
 (=>) : a -> b -> ( a, b )
@@ -21,7 +22,7 @@ type alias Geometry =
     , boxSize : Int
     , datasetsPcnt : Float
     , networkPcnt : Float
-    , outputBox : Float
+    , outputBox : Int
     }
 
 
@@ -174,9 +175,11 @@ output model =
         [ canvas
             [ id "output"
             , class "absolute"
+            , Html.Attributes.width <| Constants.density
+            , Html.Attributes.height <| Constants.density
             , style
-                [ "width" => toString geometry.outputBox
-                , "height" => toString geometry.outputBox
+                [ "width" => px geometry.outputBox
+                , "height" => px geometry.outputBox
                 ]
             ]
             []
