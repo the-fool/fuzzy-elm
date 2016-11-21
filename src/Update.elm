@@ -65,7 +65,7 @@ alterNeuronCount predicate action layerIndex model =
         newShape =
             List.indexedMap
                 (\i neuronCount ->
-                    if i == layerIndex && predicate neuronCount then
+                    if i == (layerIndex - 1) && predicate neuronCount then
                         action neuronCount
                     else
                         neuronCount

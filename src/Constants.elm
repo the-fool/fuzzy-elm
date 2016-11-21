@@ -17,7 +17,7 @@ dataRange =
 
 density : Int
 density =
-    50
+    40
 
 
 jumboCanvasSize : Int
