@@ -20,11 +20,6 @@ density =
     40
 
 
-jumboCanvasSize : Int
-jumboCanvasSize =
-    100
-
-
 brutePoints : List ( Float, Float )
 brutePoints =
     let
