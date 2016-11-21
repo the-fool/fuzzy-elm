@@ -7,7 +7,6 @@ import Datasets exposing (Point)
 import Network exposing (..)
 import Time exposing (Time)
 import Random.Pcg as Random
-import CanvasViz
 
 
 type alias Column =
@@ -51,7 +50,7 @@ alterLayerCount predicate action model =
             else
                 oldShape
     in
-        { oldNetwork | layers = layersFactory model.randomSeed newShape }
+        Network.networkFactory model.randomSeed Network.Tanh [ Network.X, Network.Y ] newShape
 
 
 alterNeuronCount : (Int -> Bool) -> (Int -> Int) -> Int -> Model -> Network
@@ -61,7 +60,7 @@ alterNeuronCount predicate action layerIndex model =
             model.network
 
         oldShape =
-            Network.getShape model.network
+            Network.getShape oldNetwork
 
         newShape =
             List.indexedMap
@@ -73,7 +72,7 @@ alterNeuronCount predicate action layerIndex model =
                 )
                 oldShape
     in
-        { oldNetwork | layers = layersFactory model.randomSeed newShape }
+        Network.networkFactory model.randomSeed Network.Tanh [ Network.X, Network.Y ] newShape
 
 
 nextSeed : Random.Seed -> Random.Seed
@@ -118,7 +117,7 @@ update message model =
                 action =
                     (+) 1
             in
-                swapSeed { model | network = alterNeuronCount predicate action column model } ! []
+                ( swapSeed { model | network = alterNeuronCount predicate action column model }, drawCanvas model.network )
 
         RemoveNeuron column ->
             let
@@ -128,7 +127,7 @@ update message model =
                 action =
                     (+) -1
             in
-                swapSeed { model | network = alterNeuronCount predicate action column model } ! []
+                ( swapSeed { model | network = alterNeuronCount predicate action column model }, drawCanvas model.network )
 
         AddLayer ->
             let
@@ -138,18 +137,14 @@ update message model =
                 action =
                     flip (++) <| [ 1 ]
             in
-                swapSeed { model | network = alterLayerCount predicate action model } ! []
+                ( swapSeed { model | network = alterLayerCount predicate action model }, drawCanvas model.network )
 
         RemoveLayer ->
             let
                 predicate =
-                    (<) 1
+                    (<) 0
 
                 action =
-                    List.length model.network.layers
-                        |> (+) -2
-                        -- Remove 2, to account for the fact that the output neuron is appended in the factory
-                        |>
-                            List.take
+                    List.reverse << List.drop 1 << List.reverse
             in
-                swapSeed { model | network = alterLayerCount predicate action model } ! []
+                ( swapSeed { model | network = alterLayerCount predicate action model }, drawCanvas model.network )

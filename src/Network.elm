@@ -225,15 +225,12 @@ networkFactory : Random.Seed -> Activation -> List EntryNeuronType -> List Int -
 networkFactory seed activation entryNeurons layerDims =
     let
         layers =
-            layersFactory seed layerDims
+            layersFactory seed (List.length entryNeurons :: layerDims)
 
         entryNeuronConfig =
             setAllEntryNeurons entryNeurons
     in
-        if List.head layerDims == Just (List.length entryNeurons) then
-            { layers = layers, activation = activation, entryNeurons = entryNeuronConfig }
-        else
-            Debug.crash "Entry neuron function list is not the same length as the layer dimension!"
+        batchPredict { layers = layers, activation = activation, entryNeurons = entryNeuronConfig }
 
 
 getShape : Network -> List Int
@@ -241,8 +238,11 @@ getShape network =
     let
         nonOutput =
             List.take (List.length network.layers - 1) network.layers
+
+        nonEntry =
+            List.drop 1 nonOutput
     in
-        List.map List.length nonOutput
+        List.map List.length nonEntry
 
 
 dot : List Float -> List Float -> Float
