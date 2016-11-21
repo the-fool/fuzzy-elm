@@ -17,7 +17,7 @@ dataRange =
 
 density : Int
 density =
-    100
+    50
 
 
 jumboCanvasSize : Int
@@ -35,11 +35,11 @@ brutePoints =
             scale ( 0, toFloat density ) ( -dataRange, dataRange )
 
         scaledInputs =
-            Debug.log "Brute!" List.map (toFloat >> scaleFun) [0..(density - 1)]
+            Debug.log "Brute!" List.map (toFloat >> scaleFun) (List.range 0 (density - 1))
     in
         lift2 (\y x -> ( x, y )) scaledInputs scaledInputs
 
 
 indexedBrutePoints : List ( Int, ( Float, Float ) )
 indexedBrutePoints =
-    List.Extra.zip [0..List.length brutePoints] brutePoints
+    List.Extra.zip (List.range 0 (List.length brutePoints)) brutePoints

@@ -14,11 +14,15 @@ type alias Network =
     }
 
 
+
+-- Entry neurons have a Neuron type within, for the purpose of playing nicely with scans and folds
+
+
 type alias EntryNeuron =
     { name : String
     , func : ( Float, Float ) -> Float
     , active : Bool
-    , outputs : Array Float
+    , neuron : Neuron
     }
 
 
@@ -55,10 +59,10 @@ entryFunction : EntryNeuronType -> (( a, a ) -> a)
 entryFunction nt =
     case nt of
         X ->
-            fst
+            Tuple.first
 
         Y ->
-            snd
+            Tuple.second
 
 
 entryName : EntryNeuronType -> String
@@ -83,7 +87,7 @@ setAllEntryNeurons types =
                     { func = entryFunction t
                     , active = active t
                     , name = entryName t
-                    , outputs = Array.map (entryFunction t) (Array.fromList Constants.brutePoints)
+                    , neuron = { outputs = Array.map (entryFunction t) (Array.fromList Constants.brutePoints), id = entryName t, weights = [ 0.0 ] }
                     }
                 )
 
@@ -94,6 +98,7 @@ setAllEntryNeurons types =
    Rather than producing new lists through maps, the algorithm runs setters and getters on a pre-existing array.
    The reduction in garbage collection cause a 2x speed-up!
 -}
+--batchPredict : Network -> Network
 
 
 batchPredict : Network -> Network
@@ -102,10 +107,9 @@ batchPredict network =
         activation =
             activationFunction network.activation
 
-        inputs =
-            Constants.indexedBrutePoints
+        activeEntryNeurons =
+            List.filter .active network.entryNeurons |> List.map .neuron
 
-        getPreviousVector : Layer -> Int -> List Float
         getPreviousVector layer index =
             layer
                 |> List.map
@@ -118,23 +122,13 @@ batchPredict network =
                                 Debug.crash "Previous getter"
                     )
 
-        calcEntryLayer : ( Int, ( Float, Float ) ) -> Layer
-        calcEntryLayer ( index, input ) =
-            case List.head network.layers of
-                Just entryLayer ->
-                    List.map2 (\neuron entry -> { neuron | outputs = Array.set index (entry |> .func >> ((|>) input)) neuron.outputs }) entryLayer (List.filter .active network.entryNeurons)
-
-                Nothing ->
-                    Debug.crash "Empty network!"
-
-        forwardProp : ( Int, ( Float, Float ) ) -> List Layer -> List Layer
-        forwardProp ( index, input ) layers =
+        forwardProp index layers =
             List.drop 1 layers
                 |> List.scanl
                     (\layer previousLayer ->
                         (List.map << doNeuron <| ( index, getPreviousVector previousLayer index )) layer
                     )
-                    (calcEntryLayer ( index, input ))
+                    activeEntryNeurons
 
         doNeuron ( index, incomingVector ) neuron =
             dot (1 :: incomingVector) neuron.weights
@@ -143,7 +137,7 @@ batchPredict network =
                     { neuron | outputs = Array.set index val neuron.outputs }
 
         doLayers =
-            List.foldl forwardProp network.layers inputs
+            List.foldl forwardProp network.layers (List.range 0 (List.length Constants.brutePoints - 1))
     in
         { network | layers = doLayers }
 
@@ -241,9 +235,9 @@ layersFactory seeder layerDims =
         weightsGrid =
             List.scanl
                 (\cur prev ->
-                    List.scanl (\_ prev' -> (weightsFactory (snd prev') (List.length prev + 1))) ( [], seeder ) [0..(cur - 1)]
+                    List.scanl (\_ prev_ -> (weightsFactory (Tuple.second prev_) (List.length prev + 1))) ( [], seeder ) (List.range 0 (cur - 1))
                         |> List.drop 1
-                        |> List.map fst
+                        |> List.map Tuple.first
                 )
                 entryLayer
                 layers

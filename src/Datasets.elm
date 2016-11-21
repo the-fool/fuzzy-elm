@@ -32,7 +32,7 @@ xorData seeder =
                 i - padding
 
         data =
-            randomCoords seeder ( -(Constants.dataRange - 1), (Constants.dataRange - 1) ) 200 |> fst
+            randomCoords seeder ( -(Constants.dataRange - 1), (Constants.dataRange - 1) ) 200 |> Tuple.first
     in
         data
             |> List.map (\( x, y ) -> ( pad x, pad y ))

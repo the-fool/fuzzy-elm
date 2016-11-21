@@ -82,7 +82,7 @@ alterNeuronCount predicate action layerIndex model =
 
 nextSeed : Random.Seed -> Random.Seed
 nextSeed seed =
-    Random.step Random.bool seed |> snd
+    Random.step Random.bool seed |> Tuple.second
 
 
 swapSeed : Model -> Model

@@ -1,7 +1,7 @@
 port module Main exposing (..)
 
 import AnimationFrame
-import Html.App as App
+import Html
 
 
 {- src -}
@@ -24,14 +24,15 @@ subscriptions model =
         ]
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
-    App.program
-        { init = (initialModel,  Task.perform (always NoOp) decodeWindowSize Window.size )
+    Html.program
+        { init = ( initialModel, Task.perform decodeWindowSize Window.size )
         , view = view
         , update = update
         , subscriptions = subscriptions
         }
+
 
 
 -- port setStorage : Model -> Cmd msg
@@ -51,7 +52,6 @@ updateWithStorage msg model =
         )
 
 -}
-
 decodeWindowSize : Window.Size -> Msg
 decodeWindowSize size =
     WindowResize ( size.width, size.height )
@@ -59,4 +59,4 @@ decodeWindowSize size =
 
 init : Maybe Model -> ( Model, Cmd Msg )
 init savedModel =
-    ( Maybe.withDefault initialModel savedModel, Task.perform (always NoOp) decodeWindowSize Window.size )
+    ( Maybe.withDefault initialModel savedModel, Task.perform decodeWindowSize Window.size )

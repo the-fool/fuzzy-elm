@@ -30,7 +30,7 @@ initialNetwork =
 
 seed0 : Random.Seed
 seed0 =
-    Random.initialSeed 628318530 |> Random.step Random.independentSeed |> snd
+    Random.initialSeed 628318530 |> Random.step Random.independentSeed |> Tuple.second
 
 
 initialModel : Model

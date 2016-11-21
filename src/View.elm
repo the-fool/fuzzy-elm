@@ -53,7 +53,7 @@ view model =
                 |> List.take (List.length model.network.layers - 1)
 
         maxWidth =
-            fst model.window |> wrapperWidth
+            Tuple.first model.window |> wrapperWidth
 
         factor x =
             maxWidth |> toFloat |> (*) x |> truncate
@@ -247,7 +247,7 @@ viewModNeurons gutter layers =
     in
         div
             [ style [ "position" => "relative" ] ]
-            (List.map layerControls [1..(numLayers)])
+            (List.map layerControls (List.range 1 (numLayers)))
 
 
 viewEntryLayer : Layer -> Html Msg
