@@ -15,10 +15,10 @@ const color = d3.scale.quantize()
                  .domain([-1, 1])
                  .range(colors);
 
-const density = 40;
 
 export function drawCanvases(network) {
   // just draw final output for now
+  const density = document.getElementById('output').width;
   const data = network[network.length - 1][0].outputs;
   const ctx = document.getElementById('output').getContext('2d');
   const img = ctx.createImageData(density, density);

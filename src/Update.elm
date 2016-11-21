@@ -1,7 +1,6 @@
 port module Update exposing (..)
 
 import Debug
-import Constants
 import Models exposing (Model)
 import Datasets exposing (Point)
 import Network exposing (..)
@@ -27,12 +26,12 @@ type Msg
     | SetInput (List Point)
 
 
-port canvasMessage : { jumboDims : Int, payload : List Layer } -> Cmd msg
+port canvasMessage : { payload : List Layer } -> Cmd msg
 
 
 drawCanvas : Network -> Cmd a
 drawCanvas network =
-    canvasMessage { jumboDims = Constants.density, payload = network.layers }
+    canvasMessage { payload = network.layers }
 
 
 alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Model -> Network
