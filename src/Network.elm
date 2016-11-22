@@ -118,6 +118,14 @@ feedForward network coord =
             |> List.drop 1
 
 
+adjustWeights : Neuron -> List Float -> List Float -> Neuron
+adjustWeights neuron deltas inputs =
+    if (List.length neuron.weights) /= (List.length deltas) then
+        Debug.crash "Number of deltas must equal weights!"
+    else
+        { neuron | weights = List.map ((-) (dot deltas (1 :: inputs))) neuron.weights }
+
+
 learn : Network -> Datasets.Point -> Network
 learn network { coord, label } =
     let
@@ -130,15 +138,13 @@ learn network { coord, label } =
         der =
             activationDerivative network.activation
 
-        outputDelta =
+        outputDeltas =
             case List.Extra.last outputs of
                 Just out ->
-                    case List.head out of
-                        Just o ->
-                            (der o) * (o - (toFloat label))
-
-                        Nothing ->
-                            Debug.crash "feedForward returned empty list"
+                    out
+                        -- Gradient * Error
+                        |>
+                            List.map (\o -> (der o) * (o - (toFloat label)))
 
                 Nothing ->
                     Debug.crash "feedForward returned empty list!"
@@ -151,10 +157,13 @@ learn network { coord, label } =
                 Nothing ->
                     Debug.crash "feedForward returned empty list!"
 
+        hiddenDeltas =
+            []
+
         adjustedOutputNeuron =
             { outputNeuron
                 | weights =
-                    List.map2 (\input weight -> weight - outputDelta * input) (1 :: finalHiddenOutputs) network.outputNeuron.weights
+                    List.map ((-) (dot outputDeltas (1 :: finalHiddenOutputs))) network.outputNeuron.weights
             }
     in
         network
