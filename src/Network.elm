@@ -6,7 +6,7 @@ import Random.Pcg as Random
 import Datasets
 import Array exposing (Array)
 import Constants
-import List.Extra
+import List.Extra exposing ((!!))
 
 
 type alias Network =
@@ -99,9 +99,74 @@ setAllEntryNeurons types =
                 )
 
 
+feedForward : Network -> ( Float, Float ) -> List (List Float)
+feedForward network coord =
+    let
+        inputVector =
+            getInputVector network coord
+
+        activation =
+            activationFunction network.activation
+
+        doNeuron incomingVector neuron =
+            dot (1 :: incomingVector) neuron.weights
+                |> activation
+    in
+        network.layers
+            ++ [ [ network.outputNeuron ] ]
+            |> List.scanl (\layer incomingVector -> List.map (doNeuron incomingVector) layer) inputVector
+            |> List.drop 1
+
+
 learn : Network -> Datasets.Point -> Network
 learn network { coord, label } =
-    network
+    let
+        outputs =
+            feedForward network coord
+
+        outputNeuron =
+            network.outputNeuron
+
+        der =
+            activationDerivative network.activation
+
+        outputDelta =
+            case List.Extra.last outputs of
+                Just out ->
+                    case List.head out of
+                        Just o ->
+                            (der o) * (o - (toFloat label))
+
+                        Nothing ->
+                            Debug.crash "feedForward returned empty list"
+
+                Nothing ->
+                    Debug.crash "feedForward returned empty list!"
+
+        finalHiddenOutputs =
+            case outputs !! (List.length network.layers - 1) of
+                Just val ->
+                    val
+
+                Nothing ->
+                    Debug.crash "feedForward returned empty list!"
+
+        adjustedOutputNeuron =
+            { outputNeuron
+                | weights =
+                    List.map2 (\input weight -> weight - outputDelta * input) (1 :: finalHiddenOutputs) network.outputNeuron.weights
+            }
+    in
+        network
+
+
+getInputVector : Network -> ( Float, Float ) -> List Float
+getInputVector network ( x, y ) =
+    let
+        activeEntryNeurons =
+            List.filter .active network.entryNeurons
+    in
+        1 :: List.map (\neuron -> neuron.func ( x, y )) activeEntryNeurons
 
 
 extractOutputNeuron : List Layer -> Neuron
@@ -257,7 +322,12 @@ networkFactory seed activation entryNeurons layerDims =
         entryNeuronConfig =
             setAllEntryNeurons entryNeurons
     in
-        batchPredict { layers = layers, outputNeuron = outputNeuron, activation = activation, entryNeurons = entryNeuronConfig }
+        batchPredict
+            { layers = layers
+            , outputNeuron = outputNeuron
+            , activation = activation
+            , entryNeurons = entryNeuronConfig
+            }
 
 
 getShape : Network -> List Int
@@ -292,3 +362,13 @@ activationFunction f =
 
         Tanh ->
             tanh
+
+
+activationDerivative : Activation -> (Float -> Float)
+activationDerivative f =
+    case f of
+        Sigmoid ->
+            \x -> (sigmoid x) * (1 - sigmoid x)
+
+        Tanh ->
+            \x -> 1 - (tanh x) ^ 2
