@@ -3,6 +3,7 @@ module Network exposing (..)
 import String
 import Debug
 import Random.Pcg as Random
+import Datasets
 import Array exposing (Array)
 import Constants
 
@@ -11,6 +12,7 @@ type alias Network =
     { layers : List Layer
     , activation : Activation
     , entryNeurons : List EntryNeuron
+    , outputNeuron : Neuron
     }
 
 
@@ -96,6 +98,11 @@ setAllEntryNeurons types =
                 )
 
 
+learn : Network -> Datasets.Point -> Network
+learn network { coord, label } =
+    network
+
+
 
 {-
    For memory efficieny, batchPredict uses slab-allocation of Arrays for neuron outputs.
@@ -127,12 +134,13 @@ batchPredict network =
                     )
 
         forwardProp index layers =
-            List.drop 1 layers
+            layers
                 |> List.scanl
                     (\layer previousLayer ->
                         (List.map << doNeuron <| ( index, getPreviousVector previousLayer index )) layer
                     )
                     activeEntryNeurons
+                |> List.drop 1
 
         doNeuron ( index, incomingVector ) neuron =
             dot (1 :: incomingVector) neuron.weights
@@ -178,34 +186,23 @@ gridPrism recordFactory networkGrid =
             networkGrid
 
 
-layersFactory : Random.Seed -> List Int -> List Layer
-layersFactory seeder layerDims =
+layersFactory : Random.Seed -> Int -> List Int -> List Layer
+layersFactory seeder numEntry layerDims =
     let
         --Add the output node
         layers =
-            List.drop 1 <| (layerDims ++ [ 1 ])
-
-        entryLayer =
-            case List.head layerDims of
-                Just n ->
-                    -- Dummy values.  Entry neurons do not have weights.
-                    -- there just has to be a matrix of numbers in the entry layer
-                    -- for the sake of bootstrapping the recursive construction of hidden layers
-                    List.repeat n [ 0.0 ]
-
-                Nothing ->
-                    Debug.crash "No entry layer"
+            List.map2 (,) (numEntry :: layerDims) layerDims
 
         weightsGrid =
             layers
-                |> List.scanl
-                    (\cur prev ->
+                |> List.map
+                    (\( numWeights, numNeurons ) ->
                         List.scanl
                             (\_ prev_ ->
-                                (weightsFactory (Tuple.second prev_) (List.length prev + 1))
+                                (weightsFactory (Tuple.second prev_) (numWeights + 1))
                             )
                             ( [], seeder )
-                            (List.range 0 (cur - 1))
+                            (List.range 1 numNeurons)
                             -- remove the initial seed entry
                             |>
                                 List.drop 1
@@ -213,7 +210,6 @@ layersFactory seeder layerDims =
                             |>
                                 List.map Tuple.first
                     )
-                    entryLayer
 
         neuronFactory id weights =
             { id = id, weights = weights, outputs = (0 |> Array.repeat (Constants.density ^ 2)) }
@@ -225,24 +221,28 @@ networkFactory : Random.Seed -> Activation -> List EntryNeuronType -> List Int -
 networkFactory seed activation entryNeurons layerDims =
     let
         layers =
-            layersFactory seed (List.length entryNeurons :: layerDims)
+            layersFactory seed (List.length entryNeurons) layerDims
+
+        outputNeuron =
+            case List.head (List.reverse layerDims) of
+                Just numFinalHiddenNeurons ->
+                    { id = "output"
+                    , weights = weightsFactory seed numFinalHiddenNeurons |> Tuple.first
+                    , outputs = (0 |> Array.repeat (Constants.density ^ 2))
+                    }
+
+                Nothing ->
+                    Debug.crash "layerDims was empty!"
 
         entryNeuronConfig =
             setAllEntryNeurons entryNeurons
     in
-        batchPredict { layers = layers, activation = activation, entryNeurons = entryNeuronConfig }
+        batchPredict <| Debug.log "the network" <| { layers = layers, outputNeuron = outputNeuron, activation = activation, entryNeurons = entryNeuronConfig }
 
 
 getShape : Network -> List Int
 getShape network =
-    let
-        nonOutput =
-            List.take (List.length network.layers - 1) network.layers
-
-        nonEntry =
-            List.drop 1 nonOutput
-    in
-        List.map List.length nonEntry
+    List.map List.length network.layers
 
 
 dot : List Float -> List Float -> Float

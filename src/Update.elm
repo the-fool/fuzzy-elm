@@ -2,6 +2,7 @@ port module Update exposing (..)
 
 import Debug
 import Models exposing (Model)
+import Constants
 import Datasets exposing (Point)
 import Network exposing (..)
 import Time exposing (Time)
@@ -26,12 +27,12 @@ type Msg
     | SetInput (List Point)
 
 
-port canvasMessage : { payload : List Layer } -> Cmd msg
+port canvasMessage : { payload : { hiddenLayers : List Network.Layer, output : Network.Neuron } } -> Cmd msg
 
 
 drawCanvas : Network -> Cmd a
 drawCanvas network =
-    canvasMessage { payload = network.layers }
+    canvasMessage { payload = { hiddenLayers = network.layers, output = network.outputNeuron } }
 
 
 alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Model -> Network
@@ -49,7 +50,7 @@ alterLayerCount predicate action model =
             else
                 oldShape
     in
-        Network.networkFactory model.randomSeed Network.Tanh [ Network.X, Network.Y ] newShape
+        Network.networkFactory model.randomSeed model.network.activation [ Network.X, Network.Y ] newShape
 
 
 alterNeuronCount : (Int -> Bool) -> (Int -> Int) -> Int -> Model -> Network
@@ -64,24 +65,19 @@ alterNeuronCount predicate action layerIndex model =
         newShape =
             List.indexedMap
                 (\i neuronCount ->
-                    if i == (layerIndex - 1) && predicate neuronCount then
+                    if i == (layerIndex) && predicate neuronCount then
                         action neuronCount
                     else
                         neuronCount
                 )
                 oldShape
     in
-        Network.networkFactory model.randomSeed Network.Tanh [ Network.X, Network.Y ] newShape
-
-
-nextSeed : Random.Seed -> Random.Seed
-nextSeed seed =
-    Random.step Random.bool seed |> Tuple.second
+        Network.networkFactory model.randomSeed model.network.activation [ Network.X, Network.Y ] newShape
 
 
 swapSeed : Model -> Model
 swapSeed model =
-    { model | randomSeed = nextSeed model.randomSeed }
+    { model | randomSeed = Constants.nextSeed model.randomSeed }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

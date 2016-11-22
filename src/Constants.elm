@@ -1,6 +1,7 @@
 module Constants exposing (..)
 
 import List.Extra exposing (lift2)
+import Random.Pcg as Random
 
 
 colors : { positive : String, negative : String }
@@ -17,7 +18,7 @@ dataRange =
 
 density : Int
 density =
-    40
+    2
 
 
 brutePoints : List ( Float, Float )
@@ -38,3 +39,8 @@ brutePoints =
 indexedBrutePoints : List ( Int, ( Float, Float ) )
 indexedBrutePoints =
     List.Extra.zip (List.range 0 (List.length brutePoints)) brutePoints
+
+
+nextSeed : Random.Seed -> Random.Seed
+nextSeed seed =
+    Random.step Random.bool seed |> Tuple.second

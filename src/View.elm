@@ -49,10 +49,6 @@ wrapperWidth x =
 view : Model -> Html Msg
 view model =
     let
-        nonOutputLayers =
-            model.network.layers
-                |> List.take (List.length model.network.layers - 1)
-
         maxWidth =
             Tuple.first model.window |> wrapperWidth
 
@@ -72,7 +68,7 @@ view model =
                 [ controls model
                 , div [ class "visuals" ]
                     [ column datasetsWidth <| dataSets model
-                    , column networkWidth <| network (factor networkWidth) nonOutputLayers
+                    , column networkWidth <| networkView (factor networkWidth) model.network
                     , column outputWidth <| output model
                     ]
                 ]
@@ -132,19 +128,14 @@ dataSets model =
             (List.map dataSelector dataOptions)
 
 
-network : Int -> List Layer -> Html Msg
-network networkWidth layers =
+networkView : Int -> Network -> Html Msg
+networkView networkWidth network =
     let
         entry =
-            case List.head layers of
-                Just entryLayer ->
-                    entryLayer
-
-                Nothing ->
-                    Debug.crash "Nothing in entry layer"
+            List.map .neuron network.entryNeurons
 
         hidden =
-            List.drop 1 layers
+            network.layers
 
         gutter =
             (*) <| (networkWidth - geometry.boxSize - 20) // (List.length hidden)
@@ -244,8 +235,8 @@ viewModNeurons gutter layers =
                         ++ position ( spacer x, 0 )
                     )
                 ]
-                [ buttonFaMsg "fa-plus" (AddNeuron x)
-                , buttonFaMsg "fa-minus" (RemoveNeuron x)
+                [ buttonFaMsg "fa-plus" (AddNeuron (x - 1))
+                , buttonFaMsg "fa-minus" (RemoveNeuron (x - 1))
                 ]
     in
         div
