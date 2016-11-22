@@ -18,10 +18,12 @@ const color = d3.scale.quantize()
 
 export function drawCanvases(network) {
   // just draw final output for now
+  const canvas = document.getElementById('output');
+  const density = canvas.width;
   const data = network.output.outputs;
-  const ctx = document.getElementById('output').getContext('2d');
-  const img = ctx.createImageData(50, 50);
-  for (let i = 0, p = -1; i < 50*50; i++) {
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(density, density);
+  for (let i = 0, p = -1; i < density*density; i++) {
       const c = d3.rgb(color(data[i]));
       img.data[++p] = c.r;
       img.data[++p] = c.g;

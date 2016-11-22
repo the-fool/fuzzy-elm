@@ -6,6 +6,7 @@ import Random.Pcg as Random
 import Datasets
 import Array exposing (Array)
 import Constants
+import List.Extra
 
 
 type alias Network =
@@ -103,6 +104,21 @@ learn network { coord, label } =
     network
 
 
+extractOutputNeuron : List Layer -> Neuron
+extractOutputNeuron layers =
+    case List.Extra.last layers of
+        Just finalLayer ->
+            case List.head finalLayer of
+                Just outputNeuron ->
+                    outputNeuron
+
+                Nothing ->
+                    Debug.crash "no output"
+
+        Nothing ->
+            Debug.crash "no layers"
+
+
 
 {-
    For memory efficieny, batchPredict uses slab-allocation of Arrays for neuron outputs.
@@ -149,9 +165,13 @@ batchPredict network =
                     { neuron | outputs = Array.set index val neuron.outputs }
 
         doLayers =
-            List.foldl forwardProp network.layers (List.range 0 (List.length Constants.brutePoints - 1))
+            List.foldl forwardProp (network.layers ++ [ [ network.outputNeuron ] ]) (List.range 0 (List.length Constants.brutePoints - 1))
+                |> \allLayers ->
+                    { hidden = List.take (List.length network.layers) allLayers
+                    , output = extractOutputNeuron allLayers
+                    }
     in
-        { network | layers = doLayers }
+        { network | layers = doLayers.hidden, outputNeuron = doLayers.output }
 
 
 weightsFactory : Random.Seed -> Int -> ( List Float, Random.Seed )
@@ -227,7 +247,7 @@ networkFactory seed activation entryNeurons layerDims =
             case List.head (List.reverse layerDims) of
                 Just numFinalHiddenNeurons ->
                     { id = "output"
-                    , weights = weightsFactory seed numFinalHiddenNeurons |> Tuple.first
+                    , weights = weightsFactory seed (numFinalHiddenNeurons + 1) |> Tuple.first
                     , outputs = (0 |> Array.repeat (Constants.density ^ 2))
                     }
 
@@ -237,7 +257,7 @@ networkFactory seed activation entryNeurons layerDims =
         entryNeuronConfig =
             setAllEntryNeurons entryNeurons
     in
-        batchPredict <| Debug.log "the network" <| { layers = layers, outputNeuron = outputNeuron, activation = activation, entryNeurons = entryNeuronConfig }
+        batchPredict { layers = layers, outputNeuron = outputNeuron, activation = activation, entryNeurons = entryNeuronConfig }
 
 
 getShape : Network -> List Int
