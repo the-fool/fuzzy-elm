@@ -172,6 +172,16 @@ hiddenGradients derivative outputs nextWeights nextGradients =
         List.indexedMap (\i out -> (derivative out) * ithAdjustFactor i) outputs
 
 
+hiddenDeltas : (Float -> Float) -> ( List (List Float), List Float ) -> List Layer -> List (List Float) -> List ( List (List Float), List Float )
+hiddenDeltas der ( outputWeights, outputDeltas ) layers outputs =
+    List.map2 (,) layers outputs
+        |> List.Extra.scanr
+            (\( layer, outs ) ( ws, gs ) ->
+                ( List.map .weights layer, hiddenGradients der outs (List.map ((::) 1) ws) gs )
+            )
+            ( outputWeights, outputDeltas )
+
+
 learn : Network -> Datasets.Point -> Network
 learn network { coord, label } =
     let
