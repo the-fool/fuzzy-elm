@@ -204,7 +204,12 @@ learn network { coord, label } =
                     Debug.crash "feedForward returned empty list!"
 
         hiddenDeltas =
-            []
+            List.map2 (,) network.layers outputs
+                |> List.Extra.scanr
+                    (\( layer, outs ) weights_gradients ->
+                        ( List.map .weights layer, hiddenGradients der outs (Tuple.first weights_gradients) (Tuple.second weights_gradients) )
+                    )
+                    ( [ outputNeuron.weights ], outputDeltas )
 
         adjustedOutputNeuron =
             { outputNeuron
