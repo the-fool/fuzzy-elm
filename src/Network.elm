@@ -149,10 +149,10 @@ errorGradientOutput derivative target output =
 
 
 hiddenGradients : (Float -> Float) -> List Float -> List (List Float) -> List Float -> List Float
-hiddenGradients derivative outputs nextWeights nextGradients =
+hiddenGradients derivative outputs nextWeightsLayer nextGradients =
     let
         ithWeights i =
-            nextWeights
+            nextWeightsLayer
                 |> List.map
                     (\ws ->
                         ws
@@ -172,14 +172,15 @@ hiddenGradients derivative outputs nextWeights nextGradients =
         List.indexedMap (\i out -> (derivative out) * ithAdjustFactor i) outputs
 
 
-hiddenDeltas : (Float -> Float) -> ( List (List Float), List Float ) -> List Layer -> List (List Float) -> List ( List (List Float), List Float )
+hiddenDeltas : (Float -> Float) -> ( List (List Float), List Float ) -> List Layer -> List (List Float) -> List (List Float)
 hiddenDeltas der ( outputWeights, outputDeltas ) layers outputs =
     List.map2 (,) layers outputs
         |> List.Extra.scanr
             (\( layer, outs ) ( ws, gs ) ->
-                ( List.map .weights layer, hiddenGradients der outs ws (1 :: gs) )
+                ( List.map .weights layer, hiddenGradients der outs ws gs )
             )
             ( outputWeights, outputDeltas )
+        |> List.map (Tuple.second)
 
 
 learn : Network -> Datasets.Point -> Network
