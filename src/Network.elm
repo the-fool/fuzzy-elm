@@ -205,27 +205,24 @@ learn network { coord, label } =
                 Nothing ->
                     Debug.crash "feedForward returned empty list!"
 
-        finalHiddenOutputs =
-            case outputs !! (List.length network.layers - 1) of
-                Just val ->
-                    val
+        hiddenAdjusts =
+            hiddenDeltas der ( [ outputNeuron.weights ], outputDeltas ) network.layers outputs
 
-                Nothing ->
-                    Debug.crash "feedForward returned empty list!"
+        {-
+           adjustedOutputNeuron =
+               { outputNeuron
+                   | weights =
+                       List.map ((-) (dot outputDeltas (1 :: finalHiddenOutputs))) network.outputNeuron.weights
+               }
 
-        hiddenDeltas =
-            List.map2 (,) network.layers outputs
-                |> List.Extra.scanr
-                    (\( layer, outs ) weights_gradients ->
-                        ( List.map .weights layer, hiddenGradients der outs (Tuple.first weights_gradients) (Tuple.second weights_gradients) )
-                    )
-                    ( [ outputNeuron.weights ], outputDeltas )
+           finalHiddenOutputs =
+               case outputs !! (List.length network.layers - 1) of
+                   Just val ->
+                       val
 
-        adjustedOutputNeuron =
-            { outputNeuron
-                | weights =
-                    List.map ((-) (dot outputDeltas (1 :: finalHiddenOutputs))) network.outputNeuron.weights
-            }
+                   Nothing ->
+                       Debug.crash "feedForward returned empty list!"
+        -}
     in
         network
 
