@@ -140,9 +140,36 @@ errorGradientOutput derivative target output =
     (derivative output) * (output - target)
 
 
-errorGradientHidden : (Float -> Float) -> List Float -> List Float -> Float -> Float
-errorGradientHidden derivative nextGradient nextWeights output =
-    (derivative output) * (dot nextWeights nextGradient)
+
+{-
+   errorGradientHidden : (Float -> Float) -> List Float -> List Float -> Float -> Float
+   errorGradientHidden derivative nextGradient nextWeights output =
+       (derivative output) * (dot nextWeights nextGradient)
+-}
+
+
+hiddenGradients : (Float -> Float) -> List Float -> List (List Float) -> List Float -> List Float
+hiddenGradients derivative outputs nextWeights nextGradients =
+    let
+        ithWeights i =
+            nextWeights
+                |> List.map
+                    (\ws ->
+                        ws
+                            !! i
+                            |> \w ->
+                                case w of
+                                    Just weight ->
+                                        weight
+
+                                    Nothing ->
+                                        Debug.crash "Index out of bounds for ith weight!"
+                    )
+
+        ithAdjustFactor i =
+            dot nextGradients (ithWeights i)
+    in
+        List.indexedMap (\i out -> (derivative out) * ithAdjustFactor i) outputs
 
 
 learn : Network -> Datasets.Point -> Network
