@@ -18,7 +18,7 @@ dataRange =
 
 density : Int
 density =
-    1
+    2
 
 
 brutePoints : List ( Float, Float )

@@ -177,7 +177,7 @@ hiddenDeltas der ( outputWeights, outputDeltas ) layers outputs =
     List.map2 (,) layers outputs
         |> List.Extra.scanr
             (\( layer, outs ) ( ws, gs ) ->
-                ( List.map .weights layer, hiddenGradients der outs (List.map ((::) 1) ws) gs )
+                ( List.map .weights layer, hiddenGradients der outs ws (1 :: gs) )
             )
             ( outputWeights, outputDeltas )
 
@@ -206,7 +206,7 @@ learn network { coord, label } =
                     Debug.crash "feedForward returned empty list!"
 
         hiddenAdjusts =
-            hiddenDeltas der ( [ outputNeuron.weights ], outputDeltas ) network.layers outputs
+            Debug.log "The hidden deltas" <| hiddenDeltas der ( [ outputNeuron.weights ], outputDeltas ) network.layers outputs
 
         {-
            adjustedOutputNeuron =
@@ -233,7 +233,7 @@ getInputVector network ( x, y ) =
         activeEntryNeurons =
             List.filter .active network.entryNeurons
     in
-        1 :: List.map (\neuron -> neuron.func ( x, y )) activeEntryNeurons
+        List.map (\neuron -> neuron.func ( x, y )) activeEntryNeurons
 
 
 extractOutputNeuron : List Layer -> Neuron
