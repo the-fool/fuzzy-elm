@@ -120,10 +120,29 @@ feedForward network coord =
 
 adjustWeights : Neuron -> List Float -> List Float -> Neuron
 adjustWeights neuron deltas inputs =
-    if (List.length neuron.weights) /= (List.length deltas) then
-        Debug.crash "Number of deltas must equal weights!"
-    else
-        { neuron | weights = List.map ((-) (dot deltas (1 :: inputs))) neuron.weights }
+    let
+        newWeights =
+            List.map ((-) (dot deltas (1 :: inputs))) neuron.weights
+    in
+        { neuron | weights = newWeights }
+
+
+weightDeltas : Float -> List Float -> Float -> List Float
+weightDeltas learningRate inputs gradient =
+    (1 :: inputs)
+        -- maybe the head of the list should be -1 ?
+        |>
+            List.map ((*) learningRate >> (*) gradient)
+
+
+errorGradientOutput : (Float -> Float) -> Float -> Float -> Float
+errorGradientOutput derivative target output =
+    (derivative output) * (output - target)
+
+
+errorGradientHidden : (Float -> Float) -> List Float -> List Float -> Float -> Float
+errorGradientHidden derivative nextGradient nextWeights output =
+    (derivative output) * (dot nextWeights nextGradient)
 
 
 learn : Network -> Datasets.Point -> Network
@@ -144,7 +163,7 @@ learn network { coord, label } =
                     out
                         -- Gradient * Error
                         |>
-                            List.map (\o -> (der o) * (o - (toFloat label)))
+                            List.map (errorGradientOutput der (toFloat label))
 
                 Nothing ->
                     Debug.crash "feedForward returned empty list!"
@@ -345,8 +364,11 @@ getShape network =
 
 
 dot : List Float -> List Float -> Float
-dot xs =
-    List.sum << List.map2 (*) xs
+dot xs ys =
+    if (/=) (List.length xs) (List.length ys) then
+        Debug.crash "Incongruent lengths for dot product!"
+    else
+        List.sum <| (List.map2 (*) xs ys)
 
 
 sigmoid : Float -> Float
