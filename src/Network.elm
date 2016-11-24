@@ -48,6 +48,7 @@ type alias Neuron =
 type Activation
     = Sigmoid
     | Tanh
+    | Linear
 
 
 type alias Prediction =
@@ -155,8 +156,7 @@ hiddenGradients derivative outputs nextWeightsLayer nextGradients =
             nextWeightsLayer
                 |> List.map
                     (\ws ->
-                        ws
-                            !! i
+                        (ws !! i)
                             |> \w ->
                                 case w of
                                     Just weight ->
@@ -183,7 +183,7 @@ hiddenDeltas der ( outputWeights, outputDeltas ) layers outputs =
         |> List.map (Tuple.second)
 
 
-learn : Network -> Datasets.Point -> Network
+learn : Network -> Datasets.Point -> List (List Float)
 learn network { coord, label } =
     let
         outputs =
@@ -207,7 +207,7 @@ learn network { coord, label } =
                     Debug.crash "feedForward returned empty list!"
 
         hiddenAdjusts =
-            Debug.log "The hidden deltas" <| hiddenDeltas der ( [ outputNeuron.weights ], outputDeltas ) network.layers outputs
+            hiddenDeltas der ( [ outputNeuron.weights ], outputDeltas ) network.layers outputs
 
         {-
            adjustedOutputNeuron =
@@ -225,7 +225,7 @@ learn network { coord, label } =
                        Debug.crash "feedForward returned empty list!"
         -}
     in
-        network
+        hiddenAdjusts
 
 
 getInputVector : Network -> ( Float, Float ) -> List Float
@@ -434,6 +434,9 @@ activationFunction f =
         Tanh ->
             tanh
 
+        Linear ->
+            identity
+
 
 activationDerivative : Activation -> (Float -> Float)
 activationDerivative f =
@@ -443,3 +446,6 @@ activationDerivative f =
 
         Tanh ->
             \x -> 1 - (tanh x) ^ 2
+
+        Linear ->
+            always 1
