@@ -1,6 +1,7 @@
 module View exposing (..)
 
 import Html exposing (..)
+import Html.Lazy exposing (lazy2)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (class, id, style)
 import String
@@ -174,7 +175,7 @@ output model =
                 ]
             ]
             []
-        , SvgViews.largeChart geometry.outputBox model.inputs
+        , lazy2 SvgViews.largeChart geometry.outputBox model.inputs
         ]
 
 
