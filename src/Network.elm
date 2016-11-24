@@ -232,8 +232,13 @@ deltas outputs gradients =
         gradients
 
 
-learn : Network -> Datasets.Point -> Network
-learn network { coord, label } =
+batchLearn : Network -> List Datasets.Point -> Network
+batchLearn network inputs =
+    List.foldl learn network inputs
+
+
+learn : Datasets.Point -> Network -> Network
+learn { coord, label } network =
     let
         outputs =
             feedForward network coord

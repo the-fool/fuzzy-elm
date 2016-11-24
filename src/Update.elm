@@ -53,6 +53,12 @@ alterLayerCount predicate action model =
         Network.networkFactory model.randomSeed model.network.activation [ Network.X, Network.Y ] newShape
 
 
+doNetwork : Model -> Network
+doNetwork model =
+    Network.batchLearn model.network model.inputs
+        |> Network.batchPredict
+
+
 alterNeuronCount : (Int -> Bool) -> (Int -> Int) -> Int -> Model -> Network
 alterNeuronCount predicate action layerIndex model =
     let
@@ -102,7 +108,7 @@ update message model =
             { model | nTicks = 0, state = 0 } ! []
 
         Learn time ->
-            ( { model | nTicks = model.nTicks + 1, network = Network.batchPredict model.network }, drawCanvas model.network )
+            ( { model | nTicks = model.nTicks + 1, network = doNetwork model }, drawCanvas model.network )
 
         AddNeuron column ->
             let
