@@ -9,8 +9,8 @@ import Models exposing (..)
 import Network exposing (..)
 import Update exposing (Msg(..))
 import SvgViews
-import Datasets exposing (xorData)
-import Constants
+import Datasets exposing (xorData, gaussData)
+import Core
 
 
 (=>) : a -> b -> ( a, b )
@@ -122,7 +122,7 @@ dataSets model =
                 [ text name ]
 
         dataOptions =
-            [ ( "XOR", xorData ), ( "GAUSSIAN", xorData ) ]
+            [ ( "XOR", xorData ), ( "GAUSSIAN", gaussData ) ]
     in
         div
             [ class "datasets-wrapper" ]
@@ -167,8 +167,8 @@ output model =
         [ canvas
             [ id "output"
             , class "absolute"
-            , Html.Attributes.width <| Constants.density
-            , Html.Attributes.height <| Constants.density
+            , Html.Attributes.width <| Core.density
+            , Html.Attributes.height <| Core.density
             , style
                 [ "width" => px geometry.outputBox
                 , "height" => px geometry.outputBox
@@ -246,10 +246,10 @@ viewModNeurons gutter layers =
 
 
 viewEntryLayer : Layer -> Html Msg
-viewEntryLayer inputs =
+viewEntryLayer entryLayer =
     div
         [ id "entry-layer" ]
-        (List.indexedMap (viewNeuron 0) inputs)
+        (List.indexedMap (viewNeuron 0) entryLayer)
 
 
 viewHiddenLayers : (Int -> Int) -> List Layer -> Html Msg

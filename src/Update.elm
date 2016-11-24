@@ -2,7 +2,7 @@ port module Update exposing (..)
 
 import Debug
 import Models exposing (Model)
-import Constants
+import Core
 import Datasets exposing (Point)
 import Network exposing (..)
 import Time exposing (Time)
@@ -83,7 +83,7 @@ alterNeuronCount predicate action layerIndex model =
 
 swapSeed : Model -> Model
 swapSeed model =
-    { model | randomSeed = Constants.nextSeed model.randomSeed }
+    { model | randomSeed = Core.nextSeed model.randomSeed }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

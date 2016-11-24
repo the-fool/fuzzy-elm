@@ -5,8 +5,9 @@ import Debug
 import Random.Pcg as Random
 import Datasets
 import Array exposing (Array)
-import Constants
+import Core
 import List.Extra exposing ((!!))
+import Maybe.Extra exposing ((?))
 
 
 type alias Network =
@@ -92,7 +93,7 @@ setAllEntryNeurons types =
                     , active = active t
                     , name = entryName t
                     , neuron =
-                        { outputs = Array.map (entryFunction t) (Array.fromList Constants.brutePoints)
+                        { outputs = Array.map (entryFunction t) (Array.fromList Core.brutePoints)
                         , id = entryName t
                         , weights = [ 0.0 ]
                         }
@@ -159,43 +160,17 @@ adjustNetwork network deltas =
         { network | layers = hiddenLayers, outputNeuron = outputNeuron }
 
 
-weightDeltas : Float -> List Float -> Float -> List Float
-weightDeltas learningRate inputs gradient =
-    (1 :: inputs)
-        -- maybe the head of the list should be -1 ?
-        |>
-            List.map ((*) learningRate >> (*) gradient)
-
-
 errorGradientOutput : (Float -> Float) -> Float -> Float -> Float
 errorGradientOutput der target output =
     (der output) * (target - output)
 
 
-
-{-
-   errorGradientHidden : (Float -> Float) -> List Float -> List Float -> Float -> Float
-   errorGradientHidden derivative nextGradient nextWeights output =
-       (derivative output) * (dot nextWeights nextGradient)
--}
-
-
-hiddenPartialDerivates : (Float -> Float) -> List Float -> List (List Float) -> List Float -> List Float
-hiddenPartialDerivates derivative outputs nextWeightsLayer nextGradients =
+hiddenPartialDerivatives : (Float -> Float) -> List Float -> List (List Float) -> List Float -> List Float
+hiddenPartialDerivatives derivative outputs nextWeightsLayer nextGradients =
     let
         ithWeights i =
             nextWeightsLayer
-                |> List.map
-                    (\ws ->
-                        (ws !! i)
-                            |> \w ->
-                                case w of
-                                    Just weight ->
-                                        weight
-
-                                    Nothing ->
-                                        Debug.crash "Index out of bounds for ith weight!"
-                    )
+                |> List.map (\ws -> (ws !! i) ? 0)
 
         ithAdjustFactor i =
             -- add 1 to index to skip over the bias at the 0th spot
@@ -209,7 +184,7 @@ gradients der ( outputWeights, outputDeltas ) layers outputs =
     List.map2 (,) layers outputs
         |> List.Extra.scanr
             (\( layer, outs ) ( ws, gs ) ->
-                ( List.map .weights layer, hiddenPartialDerivates der outs ws gs )
+                ( List.map .weights layer, hiddenPartialDerivatives der outs ws gs )
             )
             ( outputWeights, outputDeltas )
         |> List.map (Tuple.second)
@@ -267,7 +242,6 @@ learn { coord, label } network =
             -- But the entry neurons are needed for computing the deltas
             |>
                 deltas outputs
-            |> Debug.log "deltas"
             |> adjustNetwork network
 
 
@@ -341,7 +315,7 @@ batchPredict network =
                     { neuron | outputs = Array.set index val neuron.outputs }
 
         doLayers =
-            List.foldl forwardProp (network.layers ++ [ [ network.outputNeuron ] ]) (List.range 0 (List.length Constants.brutePoints - 1))
+            List.foldl forwardProp (network.layers ++ [ [ network.outputNeuron ] ]) (List.range 0 (List.length Core.brutePoints - 1))
                 |> \allLayers ->
                     { hidden = List.take (List.length network.layers) allLayers
                     , output = extractOutputNeuron allLayers
@@ -408,7 +382,7 @@ layersFactory seeder numEntry layerDims =
                     )
 
         neuronFactory id weights =
-            { id = id, weights = weights, outputs = (0 |> Array.repeat (Constants.density ^ 2)) }
+            { id = id, weights = weights, outputs = (0 |> Array.repeat (Core.density ^ 2)) }
     in
         gridPrism neuronFactory weightsGrid
 
@@ -424,7 +398,7 @@ networkFactory seed activation entryNeurons layerDims =
                 Just numFinalHiddenNeurons ->
                     { id = "output"
                     , weights = weightsFactory seed (numFinalHiddenNeurons + 1) |> Tuple.first
-                    , outputs = (0 |> Array.repeat (Constants.density ^ 2))
+                    , outputs = (0 |> Array.repeat (Core.density ^ 2))
                     }
 
                 Nothing ->
