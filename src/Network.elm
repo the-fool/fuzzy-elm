@@ -110,22 +110,53 @@ feedForward network coord =
             activationFunction network.activation
 
         doNeuron incomingVector neuron =
-            dot (1 :: incomingVector) neuron.weights
+            dot (-1 :: incomingVector) neuron.weights
                 |> activation
     in
         network.layers
             ++ [ [ network.outputNeuron ] ]
             |> List.scanl (\layer incomingVector -> List.map (doNeuron incomingVector) layer) inputVector
-            |> List.drop 1
 
 
-adjustWeights : Neuron -> List Float -> List Float -> Neuron
-adjustWeights neuron deltas inputs =
+adjustWeights : Float -> Neuron -> List Float -> Neuron
+adjustWeights learningRate neuron deltas =
     let
+        adjustedDeltas =
+            List.map ((*) learningRate) deltas
+
         newWeights =
-            List.map ((-) (dot deltas (1 :: inputs))) neuron.weights
+            List.map2 (+) adjustedDeltas neuron.weights
     in
         { neuron | weights = newWeights }
+
+
+adjustNetwork : Network -> List (List (List Float)) -> Network
+adjustNetwork network deltas =
+    let
+        allLayers =
+            network.layers ++ [ [ network.outputNeuron ] ]
+
+        newLayers =
+            List.map2 (List.map2 <| adjustWeights 0.1) allLayers deltas
+
+        hiddenLayers =
+            List.take (List.length network.layers) newLayers
+
+        outputNeuron =
+            newLayers
+                |> List.reverse
+                |> List.take 1
+                |> List.concat
+                |> List.head
+                |> \out ->
+                    case out of
+                        Just neuron ->
+                            neuron
+
+                        Nothing ->
+                            Debug.crash "something has gone terribly awry"
+    in
+        { network | layers = hiddenLayers, outputNeuron = outputNeuron }
 
 
 weightDeltas : Float -> List Float -> Float -> List Float
@@ -137,8 +168,8 @@ weightDeltas learningRate inputs gradient =
 
 
 errorGradientOutput : (Float -> Float) -> Float -> Float -> Float
-errorGradientOutput derivative target output =
-    (derivative output) * (output - target)
+errorGradientOutput der target output =
+    (der output) * (target - output)
 
 
 
@@ -149,8 +180,8 @@ errorGradientOutput derivative target output =
 -}
 
 
-hiddenGradients : (Float -> Float) -> List Float -> List (List Float) -> List Float -> List Float
-hiddenGradients derivative outputs nextWeightsLayer nextGradients =
+hiddenPartialDerivates : (Float -> Float) -> List Float -> List (List Float) -> List Float -> List Float
+hiddenPartialDerivates derivative outputs nextWeightsLayer nextGradients =
     let
         ithWeights i =
             nextWeightsLayer
@@ -167,23 +198,41 @@ hiddenGradients derivative outputs nextWeightsLayer nextGradients =
                     )
 
         ithAdjustFactor i =
-            dot nextGradients (ithWeights i)
+            -- add 1 to index to skip over the bias at the 0th spot
+            dot nextGradients (ithWeights (i + 1))
     in
         List.indexedMap (\i out -> (derivative out) * ithAdjustFactor i) outputs
 
 
-hiddenDeltas : (Float -> Float) -> ( List (List Float), List Float ) -> List Layer -> List (List Float) -> List (List Float)
-hiddenDeltas der ( outputWeights, outputDeltas ) layers outputs =
+gradients : (Float -> Float) -> ( List (List Float), List Float ) -> List Layer -> List (List Float) -> List (List Float)
+gradients der ( outputWeights, outputDeltas ) layers outputs =
     List.map2 (,) layers outputs
         |> List.Extra.scanr
             (\( layer, outs ) ( ws, gs ) ->
-                ( List.map .weights layer, hiddenGradients der outs ws gs )
+                ( List.map .weights layer, hiddenPartialDerivates der outs ws gs )
             )
             ( outputWeights, outputDeltas )
         |> List.map (Tuple.second)
 
 
-learn : Network -> Datasets.Point -> List (List Float)
+
+-- Returns a matrix of weight update deltas for every neuron in the network (including output)
+
+
+deltas : List (List Float) -> List (List Float) -> List (List (List Float))
+deltas outputs gradients =
+    List.map2
+        (\outs ->
+            List.map
+                (\gradient ->
+                    List.map ((*) gradient) (-1 :: outs)
+                )
+        )
+        outputs
+        gradients
+
+
+learn : Network -> Datasets.Point -> Network
 learn network { coord, label } =
     let
         outputs =
@@ -192,7 +241,7 @@ learn network { coord, label } =
         outputNeuron =
             network.outputNeuron
 
-        der =
+        derivFunc =
             activationDerivative network.activation
 
         outputDeltas =
@@ -201,31 +250,20 @@ learn network { coord, label } =
                     out
                         -- Gradient * Error
                         |>
-                            List.map (errorGradientOutput der (toFloat label))
+                            List.map (errorGradientOutput derivFunc (toFloat label))
 
                 Nothing ->
                     Debug.crash "feedForward returned empty list!"
-
-        hiddenAdjusts =
-            hiddenDeltas der ( [ outputNeuron.weights ], outputDeltas ) network.layers outputs
-
-        {-
-           adjustedOutputNeuron =
-               { outputNeuron
-                   | weights =
-                       List.map ((-) (dot outputDeltas (1 :: finalHiddenOutputs))) network.outputNeuron.weights
-               }
-
-           finalHiddenOutputs =
-               case outputs !! (List.length network.layers - 1) of
-                   Just val ->
-                       val
-
-                   Nothing ->
-                       Debug.crash "feedForward returned empty list!"
-        -}
     in
-        hiddenAdjusts
+        (List.drop 1 outputs)
+            -- Drop the entry neuron outputs for deriving the gradients
+            |>
+                gradients derivFunc ( [ outputNeuron.weights ], outputDeltas ) network.layers
+            -- But the entry neurons are needed for computing the deltas
+            |>
+                deltas outputs
+            |> Debug.log "deltas"
+            |> adjustNetwork network
 
 
 getInputVector : Network -> ( Float, Float ) -> List Float
@@ -442,10 +480,10 @@ activationDerivative : Activation -> (Float -> Float)
 activationDerivative f =
     case f of
         Sigmoid ->
-            \x -> (sigmoid x) * (1 - sigmoid x)
+            \x -> x * (1 - x)
 
         Tanh ->
-            \x -> 1 - (tanh x) ^ 2
+            \x -> 1 - (x ^ 2)
 
         Linear ->
             always 1

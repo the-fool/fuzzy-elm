@@ -2,7 +2,7 @@ module Tests exposing (..)
 
 import Test exposing (..)
 import Expect
-import Fuzz exposing (list, int, tuple, string)
+import Fuzz exposing (list, int, float, tuple, string)
 import String
 import Network exposing (..)
 import Models
@@ -18,6 +18,27 @@ controlNetwork =
     }
 
 
+sampleNetwork : Network
+sampleNetwork =
+    let
+        stockNetwork =
+            networkFactory Models.seed0 Sigmoid [ X, Y ] [ 2 ]
+
+        setWeights neuron newWeights =
+            { neuron | weights = newWeights }
+
+        setOutputNeuron neuron =
+            { neuron | weights = [ 0.3, -1.2, 1.1 ] }
+
+        setLayers layers =
+            List.map2 (\layer weights -> List.map2 (setWeights) layer weights) layers [ [ [ 0.8, 0.5, 0.4 ], [ -0.1, 0.9, 1.0 ] ] ]
+    in
+        { stockNetwork
+            | layers = setLayers stockNetwork.layers
+            , outputNeuron = setOutputNeuron stockNetwork.outputNeuron
+        }
+
+
 constantsNetwork : Float -> Network
 constantsNetwork x =
     let
@@ -27,6 +48,10 @@ constantsNetwork x =
         networkFactory Models.seed0 Linear [ X, Y ] [ 2, 2 ]
             |> (\net -> { net | layers = List.map (List.map (\neuron -> { neuron | weights = List.map (always x) neuron.weights })) net.layers })
             |> (\net -> { net | outputNeuron = updateOutputNeuron net.outputNeuron })
+
+
+randomNetwork =
+    networkFactory Models.seed0 Linear [ X, Y ] [ 2, 2 ]
 
 
 ones : Network.Network
@@ -62,9 +87,10 @@ all =
                     Expect.equal (feedForward ones ( 1, 1 )) [ [ 3, 3 ], [ 7, 7 ], [ 15 ] ]
             ]
         , describe "Get hidden deltas"
-            [ fuzz (list int) "Lists always have positive length" <|
-                \aList ->
-                    List.length aList |> Expect.atLeast 0
+            [ fuzzWith { runs = 100 } float "A zero delta for the output always makes for zero deltas in hidden" <|
+                \i ->
+                    (gradients (always i) ( [ [ i, i, i ] ], [ 0 ] ) randomNetwork.layers (feedForward randomNetwork ( i, i )))
+                        |> Expect.equal [ [ 0, 0 ], [ 0 ] ]
             , fuzz (list int) "Sorting a list does not change its length" <|
                 \aList ->
                     List.sort aList |> List.length |> Expect.equal (List.length aList)
