@@ -1,7 +1,7 @@
 // Get a range of colors.
 const tmpScale = d3.scale.linear()
     .domain([0, .5, 1])
-    .range(["#f59322", "#e8eaeb", "#0877bd"])
+    .range(["#0877bd", "#e8eaeb", "#f59322"])
     .clamp(true);
 // Due to numerical error, we need to specify
 // d3.range(0, end + small_epsilon, step)
