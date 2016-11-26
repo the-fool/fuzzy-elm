@@ -6,7 +6,7 @@ import Html
 
 {- src -}
 
-import Models exposing (Model, initialModel)
+import Models exposing (Model, initialModel, NetworkState(..))
 import View exposing (view)
 import Update exposing (update, Msg(..))
 import Window
@@ -16,7 +16,7 @@ import Task
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ if model.state == 1 then
+        [ if model.state == Going then
             AnimationFrame.times Learn
           else
             Sub.none

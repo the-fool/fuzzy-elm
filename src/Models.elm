@@ -8,8 +8,9 @@ import Random.Pcg as Random
 -- TODO: Write a decode/encode to move union types to localStorage
 
 
-type alias NetworkState =
-    Int
+type NetworkState
+    = Going
+    | Paused
 
 
 type alias Model =
@@ -37,7 +38,7 @@ initialModel =
     { network = initialNetwork
     , window = ( 1, 1 )
     , inputs = Datasets.xorData seed0
-    , state = 0
+    , state = Paused
     , nTicks = 0
     , randomSeed = seed0
     }

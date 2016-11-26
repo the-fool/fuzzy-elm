@@ -28,9 +28,6 @@ normal mu sigma x =
 gauss : Float -> Float -> ( Float, Float ) -> ( Float, Float )
 gauss mean variance ( a, b ) =
     let
-        {- ( a, b ) =
-           Random.step (Random.pair (Random.float 0 1) (Random.float 0 1)) seed |> Tuple.first
-        -}
         ( x1, x2 ) =
             ( 2 * a - 1, 2 * b - 1 )
 

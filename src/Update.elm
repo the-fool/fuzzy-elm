@@ -1,12 +1,11 @@
 port module Update exposing (..)
 
 import Debug
-import Models exposing (Model)
+import Models exposing (Model, NetworkState(..))
 import Core
 import Datasets exposing (Point)
 import Network exposing (..)
 import Time exposing (Time)
-import Random.Pcg as Random
 
 
 type alias Column =
@@ -99,16 +98,29 @@ update message model =
             swapSeed { model | inputs = points } ! []
 
         Begin ->
-            { model | state = 1 } ! []
+            { model | state = Going } ! []
 
         Pause ->
-            { model | state = 0 } ! []
+            { model | state = Paused } ! []
 
         Reset ->
-            { model | nTicks = 0, state = 0 } ! []
+            { model | state = Paused, nTicks = 0 } ! []
 
         Learn time ->
-            ( { model | nTicks = model.nTicks + 1, network = doNetwork model }, drawCanvas model.network )
+            ( { model
+                | network = doNetwork model
+                , nTicks =
+                    {- There is some sort of race condition with switching out animation frame subs,
+                       which results in the ticks being incremented once after the state should be paused,
+                       as if this update routine is still in the queue --- so, this extra check fixes the problem
+                    -}
+                    if model.state == Going then
+                        model.nTicks + 1
+                    else
+                        0
+              }
+            , drawCanvas model.network
+            )
 
         AddNeuron column ->
             let

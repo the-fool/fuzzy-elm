@@ -91,7 +91,7 @@ controls : Model -> Html Msg
 controls model =
     let
         toggleButton =
-            if model.state == 0 then
+            if model.state == Paused then
                 button [ class "btn", onClick Begin ] [ text "Go" ]
             else
                 button [ class "btn", onClick Pause ] [ text "Stop" ]
