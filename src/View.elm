@@ -304,14 +304,13 @@ viewNeuron x y neuron =
         ( dx, dy ) =
             ( x, y * geometry.vertical )
     in
-        div
+        canvas
             [ id neuron.id
-            , class "absolute border rounded"
+            , class "absolute border"
+            , Html.Attributes.width <| Core.density
+            , Html.Attributes.height <| Core.density
             , style
-                ([ "color" => "green"
-                 , "font-size" => "xx-small"
-                 ]
-                    ++ square geometry.boxSize
+                (square geometry.boxSize
                     ++ position ( dx, dy )
                 )
             ]

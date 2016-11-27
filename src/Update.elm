@@ -1,6 +1,6 @@
 port module Update exposing (..)
 
-import Debug
+import Array
 import Models exposing (Model, NetworkState(..))
 import Core
 import Datasets exposing (Point)
@@ -27,12 +27,23 @@ type Msg
     | SetInput (List Point)
 
 
-port canvasMessage : { payload : { hiddenLayers : List Network.Layer, output : Network.Neuron } } -> Cmd msg
+port canvasMessage : { payload : List { id : String, outputs : Array.Array Float } } -> Cmd msg
 
 
 drawCanvas : Network -> Cmd a
 drawCanvas network =
-    canvasMessage { payload = { hiddenLayers = network.layers, output = network.outputNeuron } }
+    let
+        toRecord n =
+            { id = n.id, outputs = n.outputs }
+
+        hidden =
+            network.layers
+                |> List.concatMap (List.map toRecord)
+
+        output =
+            { id = network.outputNeuron.id, outputs = network.outputNeuron.outputs }
+    in
+        canvasMessage { payload = output :: hidden }
 
 
 alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Model -> Network

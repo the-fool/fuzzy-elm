@@ -18,7 +18,7 @@ dataRange =
 
 density : Int
 density =
-    25
+    20
 
 
 numInputs : Int
