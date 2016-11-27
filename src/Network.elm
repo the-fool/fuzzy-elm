@@ -34,8 +34,16 @@ type alias EntryNeuron =
 type EntryNeuronType
     = X
     | Y
+    | X2
+    | Y2
+    | XY
     | SinX
     | SinY
+
+
+entryEnum : List EntryNeuronType
+entryEnum =
+    [ X, Y, X2, Y2, XY, SinX, SinY ]
 
 
 type alias Layer =
@@ -72,6 +80,15 @@ entryFunction nt =
         Y ->
             Tuple.second
 
+        X2 ->
+            (entryFunction X) >> (flip (^) 2)
+
+        Y2 ->
+            (entryFunction Y) >> (flip (^) 2)
+
+        XY ->
+            \( x, y ) -> x * y
+
         SinX ->
             (entryFunction X) >> sin
 
@@ -87,6 +104,15 @@ entryName nt =
 
         Y ->
             "Y"
+
+        X2 ->
+            "X^2"
+
+        Y2 ->
+            "Y^2"
+
+        XY ->
+            "X*Y"
 
         SinX ->
             "Sin X"
@@ -115,7 +141,7 @@ setAllEntryNeurons types =
         active nt =
             List.member nt types
     in
-        [ X, Y, SinX, SinY ]
+        entryEnum
             |> List.map
                 (\t ->
                     { func = entryFunction t
