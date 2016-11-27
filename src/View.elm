@@ -9,6 +9,8 @@ import Models exposing (..)
 import Network exposing (..)
 import Update exposing (Msg(..))
 import SvgViews
+import Svg
+import Svg.Attributes exposing (d, stroke, strokeWidth)
 import Datasets exposing (xorData, gaussData, circleData)
 import Core
 
@@ -29,8 +31,8 @@ type alias Geometry =
 
 geometry : Geometry
 geometry =
-    { vertical = 75
-    , boxSize = 45
+    { vertical = 65
+    , boxSize = 40
     , datasetsPcnt = 0.1
     , networkPcnt = 0.6
     , outputBox = 300
@@ -153,6 +155,7 @@ networkView networkWidth network =
                 ]
                 [ network.entryNeurons |> viewEntryLayer
                 , hidden |> viewHiddenLayers gutter
+                , hidden |> viewLinks gutter
                 ]
             ]
 
@@ -291,33 +294,53 @@ viewHiddenLayers gutter hiddenLayers =
                 (List.indexedMap (spacedNeuron columnIndex) hiddenLayer)
 
         spacedNeuron columnIndex =
-            viewNeuron (gutter (columnIndex + 1))
+            viewNeuron gutter <| columnIndex + 1
     in
         div
             [ id "hidden-layers" ]
-            (List.indexedMap viewHiddenLayer hiddenLayers)
+            ((List.indexedMap viewHiddenLayer hiddenLayers))
 
 
-viewNeuron : Int -> Int -> Neuron -> Html Msg
-viewNeuron x y neuron =
+viewLinks : (Int -> Int) -> List Layer -> Html Msg
+viewLinks gutter layers =
+    let
+        scaleX columnIndex =
+            gutter columnIndex
+
+        moveTo x y =
+            (x |> scaleX |> toString) ++ "," ++ (y * geometry.vertical |> toString)
+
+        dString x y =
+            "M" ++ (moveTo x y) ++ " " ++ (moveTo (x + 1) y)
+
+        path x y =
+            Svg.path [ dString x y |> d, stroke "#0877bd", strokeWidth "8" ] []
+    in
+        Svg.svg [ style [ "width" => "100%" ] ] ((List.indexedMap (\x layer -> List.indexedMap (\y neuorn -> path x y) layer) layers) |> List.concat)
+
+
+viewNeuron : (Int -> Int) -> Int -> Int -> Neuron -> Html Msg
+viewNeuron gutter x y neuron =
     let
         ( dx, dy ) =
-            ( x, y * geometry.vertical )
+            ( gutter x, y * geometry.vertical )
     in
-        canvas
-            [ id neuron.id
-            , class "absolute border"
-            , Html.Attributes.width <| Core.density
-            , Html.Attributes.height <| Core.density
-            , style
-                (square geometry.boxSize
-                    ++ position ( dx, dy )
-                )
-            ]
-            [ neuron.weights
-                |> List.map (toString >> String.left 6)
-                |> String.join " "
-                |> Html.text
+        div []
+            [ canvas
+                [ id neuron.id
+                , class "absolute border"
+                , Html.Attributes.width <| Core.density
+                , Html.Attributes.height <| Core.density
+                , style
+                    (square geometry.boxSize
+                        ++ position ( dx, dy )
+                    )
+                ]
+                [ neuron.weights
+                    |> List.map (toString >> String.left 6)
+                    |> String.join " "
+                    |> Html.text
+                ]
             ]
 
 
