@@ -24,6 +24,7 @@ type alias Network =
 
 type alias EntryNeuron =
     { name : String
+    , kind : EntryNeuronType
     , func : ( Float, Float ) -> Float
     , active : Bool
     , neuron : Neuron
@@ -94,6 +95,20 @@ entryName nt =
             "Sin Y"
 
 
+toggleEntryNeuron : Network -> EntryNeuronType -> List EntryNeuronType
+toggleEntryNeuron network kind =
+    network.entryNeurons
+        |> List.map
+            (\config ->
+                if config.kind == kind then
+                    { config | active = not config.active }
+                else
+                    config
+            )
+        |> List.filter .active
+        |> List.map .kind
+
+
 setAllEntryNeurons : List EntryNeuronType -> List EntryNeuron
 setAllEntryNeurons types =
     let
@@ -106,6 +121,7 @@ setAllEntryNeurons types =
                     { func = entryFunction t
                     , active = active t
                     , name = entryName t
+                    , kind = t
                     , neuron =
                         { outputs = Array.map (entryFunction t) (Array.fromList Core.brutePoints)
                         , id = entryName t

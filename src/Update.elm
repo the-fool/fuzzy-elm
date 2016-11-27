@@ -22,6 +22,7 @@ type Msg
     | Pause
     | Reset
     | Learn Time
+    | ToggleEntry Network.EntryNeuronType
     | WindowResize ( Int, Int )
     | SetInput (List Point)
 
@@ -161,3 +162,12 @@ update message model =
                     List.reverse << List.drop 1 << List.reverse
             in
                 ( swapSeed { model | network = alterLayerCount predicate action model }, drawCanvas model.network )
+
+        ToggleEntry kind ->
+            (swapSeed
+                { model
+                    | network =
+                        Network.networkFactory model.randomSeed model.network.activation (Network.toggleEntryNeuron model.network kind) (Network.getShape model.network)
+                }
+            )
+                ! []

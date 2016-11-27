@@ -257,6 +257,7 @@ viewEntryLayer entryLayer =
         viewEntryNeuron y entryConfig =
             div
                 [ id entryConfig.neuron.id
+                , onClick <| ToggleEntry entryConfig.kind
                 , class "absolute border rounded"
                 , style
                     ([ "color" => "red"
