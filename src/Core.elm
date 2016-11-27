@@ -1,7 +1,8 @@
 module Core exposing (..)
 
 import List.Extra exposing (lift2)
-import Random.Pcg as Random
+import Random.Pcg as Random exposing (Generator)
+import Array exposing (Array)
 
 
 colors : { positive : String, negative : String }
@@ -49,3 +50,60 @@ indexedBrutePoints =
 nextSeed : Random.Seed -> Random.Seed
 nextSeed seed =
     Random.step Random.bool seed |> Tuple.second
+
+
+
+--- Randomizer
+
+
+choose : Array a -> Generator ( Maybe a, Array a )
+choose arr =
+    if Array.isEmpty arr then
+        Random.constant ( Nothing, arr )
+    else
+        let
+            lastIndex =
+                Array.length arr - 1
+
+            front i =
+                Array.slice 0 i arr
+
+            back i =
+                if
+                    i == lastIndex
+                    -- workaround for #1
+                then
+                    Array.empty
+                else
+                    Array.slice (i + 1) (lastIndex + 1) arr
+
+            gen =
+                Random.int 0 lastIndex
+        in
+            Random.map
+                (\index ->
+                    ( Array.get index arr, Array.append (front index) (back index) )
+                )
+                gen
+
+
+shuffle : Array a -> Generator (Array a)
+shuffle arr =
+    if Array.isEmpty arr then
+        Random.constant arr
+    else
+        let
+            helper : ( List a, Array a ) -> Generator ( List a, Array a )
+            helper ( done, remaining ) =
+                choose remaining
+                    |> Random.andThen
+                        (\( m_val, shorter ) ->
+                            case m_val of
+                                Nothing ->
+                                    Random.constant ( done, shorter )
+
+                                Just val ->
+                                    helper ( val :: done, shorter )
+                        )
+        in
+            Random.map (Tuple.first >> Array.fromList) (helper ( [], arr ))

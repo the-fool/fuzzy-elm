@@ -2,6 +2,7 @@ module Datasets exposing (..)
 
 import Random.Pcg as Random
 import List.Extra
+import Array exposing (Array)
 import Core
 
 
@@ -49,7 +50,7 @@ gauss mean variance ( a, b ) =
         ( shift <| factor * x1, shift <| factor * x2 )
 
 
-gaussData : Random.Seed -> List Point
+gaussData : Random.Seed -> Array Point
 gaussData seeder =
     let
         midway =
@@ -69,7 +70,9 @@ gaussData seeder =
             Tuple.second deviance
                 |> List.map (\( a, b ) -> ( -midway + a, -midway - b ))
     in
-        (positive |> List.map (toPoint 1)) ++ (negative |> List.map (toPoint -1))
+        (positive |> List.map (toPoint 1))
+            ++ (negative |> List.map (toPoint -1))
+            |> Array.fromList
 
 
 toPoint : Int -> Coord -> Point
@@ -77,7 +80,7 @@ toPoint label coord =
     { coord = coord, label = label }
 
 
-circleData : Random.Seed -> List Point
+circleData : Random.Seed -> Array Point
 circleData seeder =
     let
         radius =
@@ -102,10 +105,10 @@ circleData seeder =
         pointFactory label r angle =
             toPoint label ( sin angle |> (*) r, cos angle |> (*) r )
     in
-        innerCircle ++ outerCircle
+        innerCircle ++ outerCircle |> Array.fromList
 
 
-xorData : Random.Seed -> List Point
+xorData : Random.Seed -> Array Point
 xorData seeder =
     let
         label ( x, y ) =
@@ -129,6 +132,7 @@ xorData seeder =
         data
             |> List.map (\( x, y ) -> ( pad x, pad y ))
             |> List.map label
+            |> Array.fromList
 
 
 randomList : Random.Seed -> ( Float, Float ) -> Int -> ( List Float, Random.Seed )

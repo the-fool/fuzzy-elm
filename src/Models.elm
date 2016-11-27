@@ -3,6 +3,7 @@ module Models exposing (..)
 import Network exposing (..)
 import Datasets
 import Random.Pcg as Random
+import Array exposing (Array)
 
 
 -- TODO: Write a decode/encode to move union types to localStorage
@@ -16,7 +17,7 @@ type NetworkState
 type alias Model =
     { network : Network.Network
     , window : ( Int, Int )
-    , inputs : List Datasets.Point
+    , inputs : Array Datasets.Point
     , state : NetworkState
     , nTicks : Int
     , randomSeed : Random.Seed

@@ -1,11 +1,12 @@
 port module Update exposing (..)
 
-import Array
+import Array exposing (Array)
 import Models exposing (Model, NetworkState(..))
 import Core
 import Datasets exposing (Point)
 import Network exposing (..)
 import Time exposing (Time)
+import Random.Pcg as Random
 
 
 type alias Column =
@@ -24,7 +25,7 @@ type Msg
     | Learn Time
     | ToggleEntry Network.EntryNeuronType
     | WindowResize ( Int, Int )
-    | SetInput (List Point)
+    | SetInput (Array Point)
 
 
 port canvasMessage : { payload : List { id : String, outputs : Array.Array Float } } -> Cmd msg
@@ -66,8 +67,17 @@ alterLayerCount predicate action model =
 
 doNetwork : Model -> Network
 doNetwork model =
-    Network.batchLearn model.network model.inputs
-        |> Network.batchPredict
+    let
+        shuffledArray =
+            Random.step (Core.shuffle model.inputs) model.randomSeed |> Tuple.first
+    in
+        Network.batchLearn model.network shuffledArray
+            |> Network.batchPredict
+
+
+resetCounter : Model -> Model
+resetCounter model =
+    { model | nTicks = 0 }
 
 
 alterNeuronCount : (Int -> Bool) -> (Int -> Int) -> Int -> Model -> Network
@@ -119,18 +129,19 @@ update message model =
             { model | state = Paused, nTicks = 0 } ! []
 
         Learn time ->
-            ( { model
-                | network = doNetwork model
-                , nTicks =
-                    {- There is some sort of race condition with switching out animation frame subs,
-                       which results in the ticks being incremented once after the state should be paused,
-                       as if this update routine is still in the queso, this extra check fixes the problem
-                    -}
-                    if model.state == Going then
-                        model.nTicks + 1
-                    else
-                        model.nTicks
-              }
+            ( swapSeed
+                { model
+                    | network = doNetwork model
+                    , nTicks =
+                        {- There is some sort of race condition with switching out animation frame subs,
+                           which results in the ticks being incremented once after the state should be paused,
+                           as if this update routine is still in the queso, this extra check fixes the problem
+                        -}
+                        if model.state == Going then
+                            model.nTicks + 1
+                        else
+                            model.nTicks
+                }
             , drawCanvas model.network
             )
 
@@ -142,7 +153,7 @@ update message model =
                 action =
                     (+) 1
             in
-                ( swapSeed { model | network = alterNeuronCount predicate action column model }, drawCanvas model.network )
+                ( resetCounter <| swapSeed { model | network = alterNeuronCount predicate action column model }, drawCanvas model.network )
 
         RemoveNeuron column ->
             let
@@ -152,7 +163,7 @@ update message model =
                 action =
                     (+) -1
             in
-                ( swapSeed { model | network = alterNeuronCount predicate action column model }, drawCanvas model.network )
+                ( resetCounter <| swapSeed { model | network = alterNeuronCount predicate action column model }, drawCanvas model.network )
 
         AddLayer ->
             let
@@ -162,7 +173,7 @@ update message model =
                 action =
                     flip (++) <| [ 1 ]
             in
-                ( swapSeed { model | network = alterLayerCount predicate action model }, drawCanvas model.network )
+                ( resetCounter <| swapSeed { model | network = alterLayerCount predicate action model }, drawCanvas model.network )
 
         RemoveLayer ->
             let
@@ -172,13 +183,14 @@ update message model =
                 action =
                     List.reverse << List.drop 1 << List.reverse
             in
-                ( swapSeed { model | network = alterLayerCount predicate action model }, drawCanvas model.network )
+                ( resetCounter <| swapSeed { model | network = alterLayerCount predicate action model }, drawCanvas model.network )
 
         ToggleEntry kind ->
-            ( swapSeed
-                { model
-                    | network =
-                        Network.networkFactory model.randomSeed model.network.activation (Network.toggleEntryNeuron model.network kind) (Network.getShape model.network)
-                }
+            ( resetCounter <|
+                swapSeed
+                    { model
+                        | network =
+                            Network.networkFactory model.randomSeed model.network.activation (Network.toggleEntryNeuron model.network kind) (Network.getShape model.network)
+                    }
             , drawCanvas model.network
             )

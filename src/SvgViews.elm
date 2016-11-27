@@ -6,16 +6,18 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Core
 import Datasets
+import Array exposing (Array)
 
 
-largeChart : Int -> List Datasets.Point -> Html.Html a
+largeChart : Int -> Array Datasets.Point -> Html.Html a
 largeChart dim data =
     let
         factor =
             (+) Core.dataRange >> (*) (toFloat dim / (Core.dataRange * 2))
 
         normalizedData =
-            List.map (\datum -> { datum | coord = ( Tuple.first datum.coord |> factor, Tuple.second datum.coord |> factor ) }) data
+            Array.map (\datum -> { datum | coord = ( Tuple.first datum.coord |> factor, Tuple.second datum.coord |> factor ) }) data
+                |> Array.toList
 
         s =
             toString

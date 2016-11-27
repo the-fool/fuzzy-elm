@@ -263,9 +263,9 @@ deltas outputs gradients =
         gradients
 
 
-batchLearn : Network -> List Datasets.Point -> Network
+batchLearn : Network -> Array Datasets.Point -> Network
 batchLearn network inputs =
-    List.foldl learn network inputs
+    Array.foldl learn network inputs
 
 
 learn : Datasets.Point -> Network -> Network
