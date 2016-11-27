@@ -9,7 +9,7 @@ import Models exposing (..)
 import Network exposing (..)
 import Update exposing (Msg(..))
 import SvgViews
-import Datasets exposing (xorData, gaussData)
+import Datasets exposing (xorData, gaussData, circleData)
 import Core
 
 
@@ -122,7 +122,7 @@ dataSets model =
                 [ text name ]
 
         dataOptions =
-            [ ( "XOR", xorData ), ( "GAUSSIAN", gaussData ) ]
+            [ ( "XOR", xorData ), ( "GAUSSIAN", gaussData ), ( "CIRCLE", circleData ) ]
     in
         div
             [ class "datasets-wrapper" ]

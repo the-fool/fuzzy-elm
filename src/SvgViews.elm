@@ -1,6 +1,7 @@
 module SvgViews exposing (..)
 
 import Html exposing (Html)
+import Html.Attributes
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Core
@@ -29,5 +30,11 @@ largeChart dim data =
             circle [ cx (Tuple.first coord |> s), cy (Tuple.second coord |> s), r (s 3), stroke "white", strokeWidth "1", fillColor label |> fill ] []
     in
         svg
-            [ version "1.1", x "0", y "0", width <| toString dim, height <| toString dim ]
+            [ version "1.1"
+            , x "0"
+            , y "0"
+            , width <| toString dim
+            , height <| toString dim
+            , Html.Attributes.style [ ( "position", "relative" ) ]
+            ]
             (List.map toCircle normalizedData)

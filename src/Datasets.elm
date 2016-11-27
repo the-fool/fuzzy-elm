@@ -68,11 +68,41 @@ gaussData seeder =
         negative =
             Tuple.second deviance
                 |> List.map (\( a, b ) -> ( -midway + a, -midway - b ))
-
-        toPoint label coord =
-            { coord = coord, label = label }
     in
         (positive |> List.map (toPoint 1)) ++ (negative |> List.map (toPoint -1))
+
+
+toPoint : Int -> Coord -> Point
+toPoint label coord =
+    { coord = coord, label = label }
+
+
+circleData : Random.Seed -> List Point
+circleData seeder =
+    let
+        radius =
+            Core.dataRange - 1
+
+        angles =
+            randomList seeder ( 0, 2 * pi ) Core.numInputs
+
+        radii seed a b =
+            randomList seed ( a, b ) (Core.numInputs // 2) |> Tuple.first
+
+        innerCircle =
+            List.map2 (pointFactory 1)
+                (radii seeder 0 (radius * 0.5))
+                (List.take (Core.numInputs // 2) (angles |> Tuple.first))
+
+        outerCircle =
+            List.map2 (pointFactory -1)
+                (radii (angles |> Tuple.second) (radius * 0.7) radius)
+                (List.drop (Core.numInputs // 2) (angles |> Tuple.first))
+
+        pointFactory label r angle =
+            toPoint label ( sin angle |> (*) r, cos angle |> (*) r )
+    in
+        innerCircle ++ outerCircle
 
 
 xorData : Random.Seed -> List Point
@@ -80,9 +110,9 @@ xorData seeder =
     let
         label ( x, y ) =
             if (x * y) >= 0 then
-                { coord = ( x, y ), label = 1 }
-            else
                 { coord = ( x, y ), label = -1 }
+            else
+                { coord = ( x, y ), label = 1 }
 
         padding =
             Core.dataRange / 20
@@ -99,6 +129,15 @@ xorData seeder =
         data
             |> List.map (\( x, y ) -> ( pad x, pad y ))
             |> List.map label
+
+
+randomList : Random.Seed -> ( Float, Float ) -> Int -> ( List Float, Random.Seed )
+randomList seed ( min, max ) len =
+    let
+        gen =
+            Random.float min max |> Random.list len
+    in
+        Random.step gen seed
 
 
 randomCoords : Random.Seed -> Coord -> Int -> ( List Coord, Random.Seed )

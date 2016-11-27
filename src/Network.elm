@@ -111,7 +111,7 @@ feedForward network coord =
             activationFunction network.activation
 
         doNeuron incomingVector neuron =
-            dot (-1 :: incomingVector) neuron.weights
+            dot (1 :: incomingVector) neuron.weights
                 |> activation
     in
         network.layers
@@ -138,7 +138,7 @@ adjustNetwork network deltas =
             network.layers ++ [ [ network.outputNeuron ] ]
 
         newLayers =
-            List.map2 (List.map2 <| adjustWeights 0.1) allLayers deltas
+            List.map2 (List.map2 <| adjustWeights 0.05) allLayers deltas
 
         hiddenLayers =
             List.take (List.length network.layers) newLayers
@@ -200,7 +200,7 @@ deltas outputs gradients =
         (\outs ->
             List.map
                 (\gradient ->
-                    List.map ((*) gradient) (-1 :: outs)
+                    List.map ((*) gradient) (1 :: outs)
                 )
         )
         outputs

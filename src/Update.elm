@@ -112,12 +112,12 @@ update message model =
                 , nTicks =
                     {- There is some sort of race condition with switching out animation frame subs,
                        which results in the ticks being incremented once after the state should be paused,
-                       as if this update routine is still in the queue --- so, this extra check fixes the problem
+                       as if this update routine is still in the queso, this extra check fixes the problem
                     -}
                     if model.state == Going then
                         model.nTicks + 1
                     else
-                        0
+                        model.nTicks
               }
             , drawCanvas model.network
             )
