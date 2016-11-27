@@ -443,6 +443,15 @@ layersFactory seeder numEntry layerDims =
         gridPrism neuronFactory weightsGrid
 
 
+changeShape : Random.Seed -> Network -> List Int -> Network
+changeShape seed network layerDims =
+    let
+        entry =
+            network.entryNeurons |> List.filter .active |> List.map .kind
+    in
+        networkFactory seed network.activation entry layerDims
+
+
 networkFactory : Random.Seed -> Activation -> List EntryNeuronType -> List Int -> Network
 networkFactory seed activation entryNeurons layerDims =
     let

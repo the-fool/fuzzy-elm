@@ -50,7 +50,7 @@ alterLayerCount predicate action model =
             else
                 oldShape
     in
-        Network.networkFactory model.randomSeed model.network.activation [ Network.X, Network.Y ] newShape
+        Network.changeShape model.randomSeed oldNetwork newShape
 
 
 doNetwork : Model -> Network
@@ -78,7 +78,7 @@ alterNeuronCount predicate action layerIndex model =
                 )
                 oldShape
     in
-        Network.networkFactory model.randomSeed model.network.activation [ Network.X, Network.Y ] newShape
+        Network.changeShape model.randomSeed oldNetwork newShape
 
 
 swapSeed : Model -> Model
@@ -164,10 +164,10 @@ update message model =
                 ( swapSeed { model | network = alterLayerCount predicate action model }, drawCanvas model.network )
 
         ToggleEntry kind ->
-            (swapSeed
+            ( swapSeed
                 { model
                     | network =
                         Network.networkFactory model.randomSeed model.network.activation (Network.toggleEntryNeuron model.network kind) (Network.getShape model.network)
                 }
+            , drawCanvas model.network
             )
-                ! []
