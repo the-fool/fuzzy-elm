@@ -33,6 +33,8 @@ type alias EntryNeuron =
 type EntryNeuronType
     = X
     | Y
+    | SinX
+    | SinY
 
 
 type alias Layer =
@@ -60,7 +62,7 @@ type alias AggregatedPredictions =
     List (List (List Float))
 
 
-entryFunction : EntryNeuronType -> (( a, a ) -> a)
+entryFunction : EntryNeuronType -> (( Float, Float ) -> Float)
 entryFunction nt =
     case nt of
         X ->
@@ -68,6 +70,12 @@ entryFunction nt =
 
         Y ->
             Tuple.second
+
+        SinX ->
+            (entryFunction X) >> sin
+
+        SinY ->
+            (entryFunction Y) >> sin
 
 
 entryName : EntryNeuronType -> String
@@ -79,6 +87,12 @@ entryName nt =
         Y ->
             "Y"
 
+        SinX ->
+            "Sin X"
+
+        SinY ->
+            "Sin Y"
+
 
 setAllEntryNeurons : List EntryNeuronType -> List EntryNeuron
 setAllEntryNeurons types =
@@ -86,7 +100,7 @@ setAllEntryNeurons types =
         active nt =
             List.member nt types
     in
-        [ X, Y ]
+        [ X, Y, SinX, SinY ]
             |> List.map
                 (\t ->
                     { func = entryFunction t

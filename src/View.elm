@@ -132,9 +132,6 @@ dataSets model =
 networkView : Int -> Network -> Html Msg
 networkView networkWidth network =
     let
-        entry =
-            List.map .neuron network.entryNeurons
-
         hidden =
             network.layers
 
@@ -154,7 +151,7 @@ networkView networkWidth network =
                 [ class "nodes-wrapper relative"
                 , style [ "margin-top" => px 30 ]
                 ]
-                [ entry |> viewEntryLayer
+                [ network.entryNeurons |> viewEntryLayer
                 , hidden |> viewHiddenLayers gutter
                 ]
             ]
@@ -245,11 +242,38 @@ viewModNeurons gutter layers =
             (List.map layerControls (List.range 1 (numLayers)))
 
 
-viewEntryLayer : Layer -> Html Msg
+viewEntryLayer : List EntryNeuron -> Html Msg
 viewEntryLayer entryLayer =
-    div
-        [ id "entry-layer" ]
-        (List.indexedMap (viewNeuron 0) entryLayer)
+    let
+        dy y =
+            y * geometry.vertical
+
+        activeStyle config =
+            if config.active then
+                [ "border-width" => "4px" ]
+            else
+                []
+
+        viewEntryNeuron y entryConfig =
+            div
+                [ id entryConfig.neuron.id
+                , class "absolute border rounded"
+                , style
+                    ([ "color" => "red"
+                     , "font-size" => "xx-small"
+                     ]
+                        ++ square geometry.boxSize
+                        ++ position ( 0, dy y )
+                        ++ activeStyle entryConfig
+                    )
+                ]
+                [ entryConfig.name
+                    |> Html.text
+                ]
+    in
+        div
+            [ id "entry-layer" ]
+            (List.indexedMap (viewEntryNeuron) entryLayer)
 
 
 viewHiddenLayers : (Int -> Int) -> List Layer -> Html Msg
