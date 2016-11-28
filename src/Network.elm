@@ -458,16 +458,20 @@ networkFactory seed activation entryNeurons layerDims =
         layers =
             layersFactory seed (List.length entryNeurons) layerDims
 
-        outputNeuron =
+        numOutputWeights =
             case List.head (List.reverse layerDims) of
                 Just numFinalHiddenNeurons ->
-                    { id = "output"
-                    , weights = weightsFactory seed (numFinalHiddenNeurons + 1) |> Tuple.first
-                    , outputs = (Core.buffer (Core.density ^ 2))
-                    }
+                    numFinalHiddenNeurons + 1
 
+                -- TODO: Get length of entry
                 Nothing ->
-                    Debug.crash "layerDims was empty!"
+                    3
+
+        outputNeuron =
+            { id = "output"
+            , weights = weightsFactory seed numOutputWeights |> Tuple.first
+            , outputs = (Core.buffer (Core.density ^ 2))
+            }
 
         entryNeuronConfig =
             setAllEntryNeurons entryNeurons

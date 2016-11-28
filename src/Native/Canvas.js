@@ -1,12 +1,8 @@
-// Get a range of colors.
 var tmpScale = d3.scale.linear()
     .domain([-1, 0, 1])
     .range(["#f59322","#e8eaeb","#0877bd"])
     .clamp(true);
-// Due to numerical error, we need to specify
-// d3.range(0, end + small_epsilon, step)
-// in order to guarantee that we will have end/step entries with
-// the last element being equal to end.
+
 var colors = d3.range(-1, 1 + 1E-9, 1 / 30).map(a => {
   return tmpScale(a);
 });

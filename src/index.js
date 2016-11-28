@@ -5,7 +5,6 @@ require('font-awesome/css/font-awesome.css');
 
 // Require index.html so it gets copied to dist
 require('./index.html');
-import { drawCanvases } from './canvas';
 
 const Elm = require('./Main.elm');
 const mountNode = document.getElementById('main');
@@ -22,8 +21,6 @@ brain.ports.setStorage.subscribe(function(state) {
 */
 
 const brain = Elm.Main.fullscreen();
-brain.ports.canvasMessage.subscribe(function(data) {
-  drawCanvases(data.payload);
-});
+
 // The third value on embed are the initial values for incomming ports into Elm
 //const app = Elm.Main.embed(mountNode);

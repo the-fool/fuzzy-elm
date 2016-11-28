@@ -1,4 +1,4 @@
-port module Update exposing (..)
+module Update exposing (..)
 
 import Array exposing (Array)
 import Models exposing (Model, NetworkState(..))
@@ -26,9 +26,6 @@ type Msg
     | ToggleEntry Network.EntryNeuronType
     | WindowResize ( Int, Int )
     | SetInput (Array Point)
-
-
-port canvasMessage : { payload : List { id : String, outputs : List Float } } -> Cmd msg
 
 
 drawCanvas : Network -> Cmd a
