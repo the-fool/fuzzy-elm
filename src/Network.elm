@@ -53,7 +53,7 @@ type alias Layer =
 type alias Neuron =
     { id : String
     , weights : List Float
-    , outputs : Array Float
+    , outputs : Core.Buffer
     }
 
 
@@ -140,6 +140,10 @@ setAllEntryNeurons types =
     let
         active nt =
             List.member nt types
+
+        setBuffer func buffer =
+            List.indexedMap (\i point -> Core.setBuffer i (func point) buffer) Core.brutePoints
+                |> always buffer
     in
         entryEnum
             |> List.map
@@ -149,7 +153,7 @@ setAllEntryNeurons types =
                     , name = entryName t
                     , kind = t
                     , neuron =
-                        { outputs = Array.map (entryFunction t) (Array.fromList Core.brutePoints)
+                        { outputs = Core.buffer (Core.density ^ 2) |> setBuffer (entryFunction t)
                         , id = entryName t
                         , weights = [ 0.0 ]
                         }
@@ -347,12 +351,7 @@ batchPredict network =
             layer
                 |> List.map
                     (\neuron ->
-                        case Array.get (index) neuron.outputs of
-                            Just v ->
-                                v
-
-                            Nothing ->
-                                Debug.crash "Previous getter"
+                        Core.getAtBuffer (index) neuron.outputs
                     )
 
         forwardProp index layers =
@@ -368,7 +367,7 @@ batchPredict network =
             dot (1 :: incomingVector) neuron.weights
                 |> activation
                 |> \val ->
-                    { neuron | outputs = Array.set index val neuron.outputs }
+                    { neuron | outputs = Core.setBuffer index val neuron.outputs }
 
         doLayers =
             List.foldl forwardProp (network.layers ++ [ [ network.outputNeuron ] ]) (List.range 0 (List.length Core.brutePoints - 1))
@@ -438,7 +437,7 @@ layersFactory seeder numEntry layerDims =
                     )
 
         neuronFactory id weights =
-            { id = id, weights = weights, outputs = (0 |> Array.repeat (Core.density ^ 2)) }
+            { id = id, weights = weights, outputs = (Core.buffer (Core.density ^ 2)) }
     in
         gridPrism neuronFactory weightsGrid
 
@@ -463,7 +462,7 @@ networkFactory seed activation entryNeurons layerDims =
                 Just numFinalHiddenNeurons ->
                     { id = "output"
                     , weights = weightsFactory seed (numFinalHiddenNeurons + 1) |> Tuple.first
-                    , outputs = (0 |> Array.repeat (Core.density ^ 2))
+                    , outputs = (Core.buffer (Core.density ^ 2))
                     }
 
                 Nothing ->

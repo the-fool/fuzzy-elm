@@ -1,20 +1,30 @@
-var _user$project$Native_Buffer = {
-  'buffer': buffer,
-  'set': set,
-  'get': get
-}
 
 var buffer = function(sz) {
+  console.log(sz);
   return new Array(sz);
 }
 
-var set = function(ar, i, val) {
+var set = function(i, val, ar) {
+  if (!ar) { console.log("why is ar undefined?");}
+  ar = ar || [];
   ar[i] = val;
   return ar;
 }
 
-var get = function(ar, i) {
+
+var get = function(i, ar) {
   return ar[i];
+}
+
+var toList = function(ar) {
+  return ar;
+}
+
+var _user$project$Native_Buffer = {
+  'buffer': buffer,
+  'set': F3(set),
+  'get': F2(get),
+  'toList': toList
 }
 
 // make is a function that takes an instance of the
@@ -37,7 +47,9 @@ var make = function make(elm) {
     return elm.Native.Buffer.values = {
       'buffer': buffer,
       'set': set,
-      'get': get
+      'get': get,
+      'fromList': fromList,
+      'toList': toList
     };
 };
 

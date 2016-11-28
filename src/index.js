@@ -22,9 +22,7 @@ brain.ports.setStorage.subscribe(function(state) {
 */
 
 const brain = Elm.Main.fullscreen();
-console.log(brain);
 brain.ports.canvasMessage.subscribe(function(data) {
-  console.log(data);
   drawCanvases(data.payload);
 });
 // The third value on embed are the initial values for incomming ports into Elm

@@ -28,21 +28,21 @@ type Msg
     | SetInput (Array Point)
 
 
-port canvasMessage : { payload : List { id : String, outputs : Array.Array Float } } -> Cmd msg
+port canvasMessage : { payload : List { id : String, outputs : List Float } } -> Cmd msg
 
 
 drawCanvas : Network -> Cmd a
 drawCanvas network =
     let
         toRecord n =
-            { id = n.id, outputs = n.outputs }
+            { id = n.id, outputs = [] }
 
         hidden =
             network.layers
                 |> List.concatMap (List.map toRecord)
 
         output =
-            { id = network.outputNeuron.id, outputs = network.outputNeuron.outputs }
+            { id = network.outputNeuron.id, outputs = [] }
     in
         canvasMessage { payload = output :: hidden }
 

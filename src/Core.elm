@@ -15,14 +15,24 @@ buffer =
     Native.Buffer.buffer
 
 
-setBuffer : Buffer -> Int -> Float -> Buffer
+setBuffer : Int -> Float -> Buffer -> Buffer
 setBuffer =
     Native.Buffer.set
 
 
-getAtBuffer : Buffer -> Int -> Float
+getAtBuffer : Int -> Buffer -> Float
 getAtBuffer =
     Native.Buffer.get
+
+
+fromList : List Float -> Buffer
+fromList a =
+    Native.Buffer.fromList a
+
+
+toList : Buffer -> List Float
+toList =
+    Native.Buffer.toList
 
 
 colors : { positive : String, negative : String }
