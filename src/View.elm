@@ -310,13 +310,16 @@ viewLinks gutter layers =
         moveTo x y =
             (x |> scaleX |> toString) ++ "," ++ (y * geometry.vertical |> toString)
 
-        dString x y =
-            "M" ++ (moveTo x y) ++ " " ++ (moveTo (x + 1) y)
+        dString x start stop =
+            "M" ++ (moveTo x start) ++ " " ++ (moveTo (x + 1) stop)
 
-        path x y =
-            Svg.path [ dString x y |> d, stroke "#0877bd", strokeWidth "8" ] []
+        path x start stop =
+            Svg.path [ dString x start stop |> d, stroke "#0877bd", strokeWidth "8" ] []
     in
-        Svg.svg [ style [ "width" => "100%" ] ] ((List.indexedMap (\x layer -> List.indexedMap (\y neuorn -> path x y) layer) layers) |> List.concat)
+        Svg.svg
+            [ style [ "width" => "100%" ]
+            ]
+            ((List.indexedMap (\x layer -> List.indexedMap (\y neuron -> List.indexedMap (\i w -> path x i y) (List.drop 1 neuron.weights)) layer) layers) |> List.concat |> List.concat)
 
 
 viewNeuron : (Int -> Int) -> Int -> Int -> Neuron -> Html Msg
