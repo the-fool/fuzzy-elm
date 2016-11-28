@@ -341,12 +341,17 @@ viewLinks gutter entryConfig layers =
                 |> List.concat
                 |> List.concat
 
-        entry =
+        entryXs =
             entryConfig
                 |> List.indexedMap (,)
                 |> List.filter (Tuple.second >> .active)
                 |> List.map Tuple.first
-                |> List.map (\i -> List.indexedMap (\j n -> path 0 0 i j) (List.take 1 layers |> List.concat))
+
+        entry =
+            layers
+                |> List.take 1
+                |> List.concat
+                |> List.indexedMap (\i n -> n.weights |> List.map2 (\j w -> path w 0 j i) entryXs)
                 |> List.concat
     in
         Svg.svg
