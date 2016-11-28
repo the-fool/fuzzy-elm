@@ -318,11 +318,26 @@ viewLinks gutter entryConfig layers =
 
         path x start stop =
             Svg.path [ dString x start stop |> d, stroke "#0877bd", strokeWidth "8" ] []
+
+        nonEntry =
+            layers
+                |> List.drop 1
+                |> List.indexedMap (\x -> List.indexedMap (\y -> .weights >> List.drop 1 >> List.indexedMap (\i w -> path (x + 1) i y)))
+                |> List.concat
+                |> List.concat
+
+        entry =
+            entryConfig
+                |> List.indexedMap (,)
+                |> List.filter (Tuple.second >> .active)
+                |> List.map Tuple.first
+                |> List.map (\i -> List.indexedMap (\j n -> path 0 i j) (List.take 1 layers |> List.concat))
+                |> List.concat
     in
         Svg.svg
             [ style [ "width" => "100%", "height" => height ]
             ]
-            ((List.indexedMap (\x layer -> List.indexedMap (\y neuron -> List.indexedMap (\i w -> path x i y) (List.drop 1 neuron.weights)) layer) layers) |> List.concat |> List.concat)
+            (entry ++ nonEntry)
 
 
 viewNeuron : (Int -> Int) -> Int -> Int -> Neuron -> Html Msg
