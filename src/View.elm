@@ -12,7 +12,7 @@ import SvgViews
 import Svg
 import Svg.Attributes exposing (d, stroke, strokeWidth)
 import Datasets exposing (xorData, gaussData, circleData)
-import Core
+import Core exposing (colors)
 
 
 (=>) : a -> b -> ( a, b )
@@ -319,13 +319,25 @@ viewLinks gutter entryConfig layers =
         dString x start stop =
             "M" ++ (moveFrom x start) ++ " " ++ (moveTo (x + 1) stop)
 
-        path x start stop =
-            Svg.path [ dString x start stop |> d, stroke "#0877bd", strokeWidth "2" ] []
+        linkColor w =
+            stroke <|
+                if w < 0 then
+                    colors.negative
+                else if w > 0 then
+                    colors.positive
+                else
+                    "#fafafa"
+
+        linkWidth w =
+            w |> abs |> (*) 2 |> toString |> strokeWidth
+
+        path w x start stop =
+            Svg.path [ dString x start stop |> d, linkColor w, linkWidth w ] []
 
         nonEntry =
             layers
                 |> List.drop 1
-                |> List.indexedMap (\x -> List.indexedMap (\y -> .weights >> List.drop 1 >> List.indexedMap (\i w -> path (x + 1) i y)))
+                |> List.indexedMap (\x -> List.indexedMap (\y -> .weights >> List.drop 1 >> List.indexedMap (\i w -> path w (x + 1) i y)))
                 |> List.concat
                 |> List.concat
 
@@ -334,7 +346,7 @@ viewLinks gutter entryConfig layers =
                 |> List.indexedMap (,)
                 |> List.filter (Tuple.second >> .active)
                 |> List.map Tuple.first
-                |> List.map (\i -> List.indexedMap (\j n -> path 0 i j) (List.take 1 layers |> List.concat))
+                |> List.map (\i -> List.indexedMap (\j n -> path 0 0 i j) (List.take 1 layers |> List.concat))
                 |> List.concat
     in
         Svg.svg
