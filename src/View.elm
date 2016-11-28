@@ -310,14 +310,17 @@ viewLinks gutter entryConfig layers =
         scaleX columnIndex =
             gutter columnIndex
 
+        moveFrom x y =
+            (x |> scaleX |> (+) geometry.boxSize |> toString) ++ "," ++ (y * geometry.vertical + (geometry.boxSize // 2) |> toString)
+
         moveTo x y =
-            (x |> scaleX |> toString) ++ "," ++ (y * geometry.vertical |> toString)
+            (x |> scaleX |> toString) ++ "," ++ (y * geometry.vertical + (geometry.boxSize // 2) |> toString)
 
         dString x start stop =
-            "M" ++ (moveTo x start) ++ " " ++ (moveTo (x + 1) stop)
+            "M" ++ (moveFrom x start) ++ " " ++ (moveTo (x + 1) stop)
 
         path x start stop =
-            Svg.path [ dString x start stop |> d, stroke "#0877bd", strokeWidth "8" ] []
+            Svg.path [ dString x start stop |> d, stroke "#0877bd", strokeWidth "2" ] []
 
         nonEntry =
             layers
