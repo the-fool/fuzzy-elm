@@ -35,7 +35,7 @@ geometry =
     , boxSize = 40
     , datasetsPcnt = 0.1
     , networkPcnt = 0.6
-    , outputBox = 300
+    , outputBox = 250
     }
 
 
@@ -163,7 +163,7 @@ networkView networkWidth network =
 output : Model -> Html Msg
 output model =
     div
-        [ class "ml2" ]
+        [ style [ "float" => "right" ] ]
         [ canvas
             [ id "output"
             , class "absolute"
