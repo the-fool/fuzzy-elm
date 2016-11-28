@@ -5,6 +5,7 @@ import Html.Lazy exposing (lazy2)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (class, id, style)
 import String
+import List.Extra
 import Models exposing (..)
 import Network exposing (..)
 import Update exposing (Msg(..))
@@ -25,7 +26,6 @@ type alias Geometry =
     , boxSize : Int
     , datasetsPcnt : Float
     , networkPcnt : Float
-    , outputBox : Int
     }
 
 
@@ -34,8 +34,7 @@ geometry =
     { vertical = 65
     , boxSize = 40
     , datasetsPcnt = 0.1
-    , networkPcnt = 0.6
-    , outputBox = 250
+    , networkPcnt = 0.55
     }
 
 
@@ -72,7 +71,7 @@ view model =
                 , div [ class "visuals" ]
                     [ column datasetsWidth <| dataSets model
                     , column networkWidth <| networkView (factor networkWidth) model.network
-                    , column outputWidth <| output model
+                    , column outputWidth <| output model (factor outputWidth)
                     ]
                 ]
             ]
@@ -160,23 +159,33 @@ networkView networkWidth network =
             ]
 
 
-output : Model -> Html Msg
-output model =
-    div
-        [ style [ "float" => "right" ] ]
-        [ canvas
-            [ id "output"
-            , class "absolute"
-            , Html.Attributes.width <| Core.density
-            , Html.Attributes.height <| Core.density
-            , style
-                [ "width" => px geometry.outputBox
-                , "height" => px geometry.outputBox
+output : Model -> Int -> Html Msg
+output model w =
+    let
+        scale x a =
+            a |> toFloat |> (*) x |> truncate
+
+        dim =
+            w |> scale 0.8
+
+        margin =
+            w |> scale 0.2 |> px
+    in
+        div
+            [ style [ "margin-left" => margin ] ]
+            [ canvas
+                [ id "output"
+                , class "absolute"
+                , Html.Attributes.width <| Core.density
+                , Html.Attributes.height <| Core.density
+                , style
+                    [ "width" => px dim
+                    , "height" => px dim
+                    ]
                 ]
+                []
+            , lazy2 SvgViews.largeChart dim model.inputs
             ]
-            []
-        , lazy2 SvgViews.largeChart geometry.outputBox model.inputs
-        ]
 
 
 viewModLayers : List Layer -> Html Msg
@@ -334,7 +343,7 @@ viewLinks gutter entryConfig layers =
         path w x start stop =
             Svg.path [ dString x start stop |> d, linkColor w, linkWidth w ] []
 
-        nonEntry =
+        hidden =
             layers
                 |> List.drop 1
                 |> List.indexedMap (\x -> List.indexedMap (\y -> .weights >> List.drop 1 >> List.indexedMap (\i w -> path w (x + 1) i y)))
@@ -353,11 +362,19 @@ viewLinks gutter entryConfig layers =
                 |> List.concat
                 |> List.indexedMap (\i n -> n.weights |> List.map2 (\j w -> path w 0 j i) entryXs)
                 |> List.concat
+
+        output =
+            case layers |> List.concat |> List.Extra.last of
+                Just finalLayer ->
+                    []
+
+                Nothing ->
+                    []
     in
         Svg.svg
             [ style [ "width" => "100%", "height" => height ]
             ]
-            (entry ++ nonEntry)
+            (entry ++ hidden ++ output)
 
 
 viewNeuron : (Int -> Int) -> Int -> Int -> Neuron -> Html Msg
