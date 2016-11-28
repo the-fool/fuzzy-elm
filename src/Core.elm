@@ -1,44 +1,15 @@
 module Core exposing (..)
 
-import Native.Buffer
 import Native.Canvas
 import List.Extra exposing (lift2)
 import Random.Pcg as Random exposing (Generator)
 import Array exposing (Array)
-
-
-type Buffer
-    = Buffer
+import Buffer exposing (Buffer)
 
 
 drawCanvases : Buffer -> Buffer
 drawCanvases =
     Native.Canvas.drawCanvases
-
-
-buffer : Int -> Buffer
-buffer =
-    Native.Buffer.buffer
-
-
-setBuffer : Int -> a -> Buffer -> Buffer
-setBuffer =
-    Native.Buffer.set
-
-
-getAtBuffer : Int -> Buffer -> a
-getAtBuffer =
-    Native.Buffer.get
-
-
-fromList : List Float -> Buffer
-fromList a =
-    Native.Buffer.fromList a
-
-
-toList : Buffer -> List Float
-toList =
-    Native.Buffer.toList
 
 
 colors : { positive : String, negative : String }

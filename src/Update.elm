@@ -7,6 +7,7 @@ import Datasets exposing (Point)
 import Network exposing (..)
 import Time exposing (Time)
 import Random.Pcg as Random
+import Buffer
 
 
 type alias Column =
@@ -37,7 +38,7 @@ drawCanvas network =
 
         payload =
             (network.outputNeuron :: hidden)
-                |> List.indexedMap (\i el -> Core.setBuffer i el network.canvasPayload)
+                |> List.indexedMap (\i el -> Buffer.set i el network.canvasPayload)
                 |> always network.canvasPayload
     in
         Core.drawCanvases payload |> always Cmd.none

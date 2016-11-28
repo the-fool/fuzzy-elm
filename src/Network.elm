@@ -6,6 +6,7 @@ import Random.Pcg as Random
 import Datasets
 import Array exposing (Array)
 import Core
+import Buffer exposing (Buffer)
 import List.Extra exposing ((!!))
 import Maybe.Extra exposing ((?))
 
@@ -15,7 +16,7 @@ type alias Network =
     , activation : Activation
     , entryNeurons : List EntryNeuron
     , outputNeuron : Neuron
-    , canvasPayload : Core.Buffer
+    , canvasPayload : Buffer
     }
 
 
@@ -54,7 +55,7 @@ type alias Layer =
 type alias Neuron =
     { id : String
     , weights : List Float
-    , outputs : Core.Buffer
+    , outputs : Buffer
     }
 
 
@@ -143,7 +144,7 @@ setAllEntryNeurons types =
             List.member nt types
 
         setBuffer func buffer =
-            List.indexedMap (\i point -> Core.setBuffer i (func point) buffer) Core.brutePoints
+            List.indexedMap (\i point -> Buffer.set i (func point) buffer) Core.brutePoints
                 |> always buffer
     in
         entryEnum
@@ -154,7 +155,7 @@ setAllEntryNeurons types =
                     , name = entryName t
                     , kind = t
                     , neuron =
-                        { outputs = Core.buffer (Core.density ^ 2) |> setBuffer (entryFunction t)
+                        { outputs = Buffer.buffer (Core.density ^ 2) |> setBuffer (entryFunction t)
                         , id = entryName t
                         , weights = [ 0.0 ]
                         }
@@ -352,7 +353,7 @@ batchPredict network =
             layer
                 |> List.map
                     (\neuron ->
-                        Core.getAtBuffer (index) neuron.outputs
+                        Buffer.get (index) neuron.outputs
                     )
 
         forwardProp index layers =
@@ -368,7 +369,7 @@ batchPredict network =
             dot (1 :: incomingVector) neuron.weights
                 |> activation
                 |> \val ->
-                    { neuron | outputs = Core.setBuffer index val neuron.outputs }
+                    { neuron | outputs = Buffer.set index val neuron.outputs }
 
         doLayers =
             List.foldl forwardProp (network.layers ++ [ [ network.outputNeuron ] ]) (List.range 0 (List.length Core.brutePoints - 1))
@@ -438,7 +439,7 @@ layersFactory seeder numEntry layerDims =
                     )
 
         neuronFactory id weights =
-            { id = id, weights = weights, outputs = (Core.buffer (Core.density ^ 2)) }
+            { id = id, weights = weights, outputs = (Buffer.buffer (Core.density ^ 2)) }
     in
         gridPrism neuronFactory weightsGrid
 
@@ -463,14 +464,13 @@ networkFactory seed activation entryNeurons layerDims =
                 Just numFinalHiddenNeurons ->
                     numFinalHiddenNeurons + 1
 
-                -- TODO: Get length of entry
                 Nothing ->
-                    3
+                    List.length entryNeurons + 1
 
         outputNeuron =
             { id = "output"
             , weights = weightsFactory seed numOutputWeights |> Tuple.first
-            , outputs = (Core.buffer (Core.density ^ 2))
+            , outputs = (Buffer.buffer (Core.density ^ 2))
             }
 
         entryNeuronConfig =
@@ -481,7 +481,7 @@ networkFactory seed activation entryNeurons layerDims =
             , outputNeuron = outputNeuron
             , activation = activation
             , entryNeurons = entryNeuronConfig
-            , canvasPayload = Core.buffer (List.concat layers |> List.length |> (+) 1)
+            , canvasPayload = Buffer.buffer (List.concat layers |> List.length |> (+) 1)
             }
 
 
