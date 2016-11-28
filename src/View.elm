@@ -154,8 +154,8 @@ networkView networkWidth network =
                 , style [ "margin-top" => px 30 ]
                 ]
                 [ network.entryNeurons |> viewEntryLayer
-                , hidden |> viewHiddenLayers gutter
-                , hidden |> viewLinks gutter
+                , viewHiddenLayers gutter hidden
+                , viewLinks gutter network.entryNeurons hidden
                 ]
             ]
 
@@ -301,9 +301,12 @@ viewHiddenLayers gutter hiddenLayers =
             ((List.indexedMap viewHiddenLayer hiddenLayers))
 
 
-viewLinks : (Int -> Int) -> List Layer -> Html Msg
-viewLinks gutter layers =
+viewLinks : (Int -> Int) -> List EntryNeuron -> List Layer -> Html Msg
+viewLinks gutter entryConfig layers =
     let
+        height =
+            List.length entryConfig |> (*) geometry.vertical |> px
+
         scaleX columnIndex =
             gutter columnIndex
 
@@ -317,7 +320,7 @@ viewLinks gutter layers =
             Svg.path [ dString x start stop |> d, stroke "#0877bd", strokeWidth "8" ] []
     in
         Svg.svg
-            [ style [ "width" => "100%" ]
+            [ style [ "width" => "100%", "height" => height ]
             ]
             ((List.indexedMap (\x layer -> List.indexedMap (\y neuron -> List.indexedMap (\i w -> path x i y) (List.drop 1 neuron.weights)) layer) layers) |> List.concat |> List.concat)
 

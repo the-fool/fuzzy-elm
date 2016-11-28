@@ -148,7 +148,7 @@ update message model =
         AddNeuron column ->
             let
                 predicate =
-                    (>) 8
+                    (>) 7
 
                 action =
                     (+) 1
