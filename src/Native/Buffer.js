@@ -1,6 +1,5 @@
 
 var buffer = function(sz) {
-  console.log(sz);
   return new Array(sz);
 }
 
@@ -16,17 +15,13 @@ var get = function(i, ar) {
   return ar[i];
 }
 
-var toList = function(ar) {
-  return ar;
-}
 
 var _user$project$Native_Buffer = {
   'buffer': buffer,
   'set': F3(set),
   'get': F2(get),
-  'toList': toList
 }
-
+/*
 // make is a function that takes an instance of the
 // elm runtime
 // returns an object where:
@@ -55,7 +50,7 @@ var make = function make(elm) {
 
 exports.make = make;
 
-
+*/
 // setup code for MyModule
 // Elm.Native.MyModule should be an object with
 // a property `make` which is specified above

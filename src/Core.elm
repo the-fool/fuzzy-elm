@@ -1,6 +1,7 @@
 module Core exposing (..)
 
 import Native.Buffer
+import Native.Canvas
 import List.Extra exposing (lift2)
 import Random.Pcg as Random exposing (Generator)
 import Array exposing (Array)
@@ -10,17 +11,22 @@ type Buffer
     = Buffer
 
 
+drawCanvases : Buffer -> Buffer
+drawCanvases =
+    Native.Canvas.drawCanvases
+
+
 buffer : Int -> Buffer
 buffer =
     Native.Buffer.buffer
 
 
-setBuffer : Int -> Float -> Buffer -> Buffer
+setBuffer : Int -> a -> Buffer -> Buffer
 setBuffer =
     Native.Buffer.set
 
 
-getAtBuffer : Int -> Buffer -> Float
+getAtBuffer : Int -> Buffer -> a
 getAtBuffer =
     Native.Buffer.get
 
@@ -49,7 +55,7 @@ dataRange =
 
 density : Int
 density =
-    20
+    40
 
 
 numInputs : Int

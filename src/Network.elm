@@ -15,6 +15,7 @@ type alias Network =
     , activation : Activation
     , entryNeurons : List EntryNeuron
     , outputNeuron : Neuron
+    , canvasPayload : Core.Buffer
     }
 
 
@@ -476,6 +477,7 @@ networkFactory seed activation entryNeurons layerDims =
             , outputNeuron = outputNeuron
             , activation = activation
             , entryNeurons = entryNeuronConfig
+            , canvasPayload = Core.buffer (List.concat layers |> List.length |> (+) 1)
             }
 
 

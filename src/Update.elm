@@ -34,17 +34,16 @@ port canvasMessage : { payload : List { id : String, outputs : List Float } } ->
 drawCanvas : Network -> Cmd a
 drawCanvas network =
     let
-        toRecord n =
-            { id = n.id, outputs = [] }
-
         hidden =
             network.layers
-                |> List.concatMap (List.map toRecord)
+                |> List.concat
 
-        output =
-            { id = network.outputNeuron.id, outputs = [] }
+        payload =
+            (network.outputNeuron :: hidden)
+                |> List.indexedMap (\i el -> Core.setBuffer i el network.canvasPayload)
+                |> always network.canvasPayload
     in
-        canvasMessage { payload = output :: hidden }
+        Core.drawCanvases payload |> always Cmd.none
 
 
 alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Model -> Network
@@ -109,7 +108,7 @@ swapSeed model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
-    case Debug.log "msg" message of
+    case message of
         NoOp ->
             model ! []
 
