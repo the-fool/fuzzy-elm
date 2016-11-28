@@ -7,8 +7,6 @@ require('font-awesome/css/font-awesome.css');
 require('./index.html');
 import { drawCanvases } from './canvas';
 
-
-
 const Elm = require('./Main.elm');
 const mountNode = document.getElementById('main');
 

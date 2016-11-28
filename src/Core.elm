@@ -1,8 +1,28 @@
 module Core exposing (..)
 
+import Native.Buffer
 import List.Extra exposing (lift2)
 import Random.Pcg as Random exposing (Generator)
 import Array exposing (Array)
+
+
+type Buffer
+    = Buffer
+
+
+buffer : Int -> Buffer
+buffer =
+    Native.Buffer.buffer
+
+
+setBuffer : Buffer -> Int -> Float -> Buffer
+setBuffer =
+    Native.Buffer.set
+
+
+getAtBuffer : Buffer -> Int -> Float
+getAtBuffer =
+    Native.Buffer.get
 
 
 colors : { positive : String, negative : String }
