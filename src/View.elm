@@ -26,6 +26,8 @@ type alias Geometry =
     , boxSize : Int
     , datasetsPcnt : Float
     , networkPcnt : Float
+    , jumbo : Int
+    , networkMarginRight : Int
     }
 
 
@@ -34,7 +36,9 @@ geometry =
     { vertical = 65
     , boxSize = 40
     , datasetsPcnt = 0.1
-    , networkPcnt = 0.55
+    , networkPcnt = 0.65
+    , jumbo = 300
+    , networkMarginRight = 100
     }
 
 
@@ -58,7 +62,7 @@ view model =
             maxWidth |> toFloat |> (*) x |> truncate
 
         column sz node =
-            div [ class "col", style [ "width" => (px <| factor sz) ] ] [ node ]
+            div [ class "col", style [ "width" => (sz |> factor |> px) ] ] [ node ]
 
         ( datasetsWidth, networkWidth, outputWidth ) =
             ( geometry.datasetsPcnt, geometry.networkPcnt, (1 - (geometry.datasetsPcnt + geometry.networkPcnt)) )
@@ -70,8 +74,10 @@ view model =
                 [ controls model
                 , div [ class "visuals" ]
                     [ column datasetsWidth <| dataSets model
-                    , column networkWidth <| networkView (factor networkWidth) model.network
-                    , column outputWidth <| output model (factor outputWidth)
+                    , div [ class "nodes clearfix", style [ "margin-left" => (datasetsWidth |> factor |> px) ] ]
+                        [ column networkWidth <| networkView (factor networkWidth) model.network
+                        , column outputWidth <| output model (factor outputWidth)
+                        ]
                     ]
                 ]
             ]
@@ -133,11 +139,8 @@ dataSets model =
 networkView : Int -> Network -> Html Msg
 networkView networkWidth network =
     let
-        hidden =
-            network.layers
-
         gutter =
-            (*) <| (networkWidth - geometry.boxSize - 20) // (List.length hidden)
+            networkWidth |> (+) -geometry.networkMarginRight |> (+) -(geometry.boxSize + 20) |> (flip (//)) (List.length network.layers) |> (*)
     in
         div
             [ class "network-wrapper" ]
@@ -145,16 +148,16 @@ networkView networkWidth network =
                 [ class "layer-editor-wrapper"
                 , style [ "margin-left" => px geometry.boxSize ]
                 ]
-                [ hidden |> viewModLayers
-                , hidden |> viewModNeurons gutter
+                [ network.layers |> viewModLayers
+                , network.layers |> viewModNeurons gutter
                 ]
             , div
                 [ class "nodes-wrapper relative"
                 , style [ "margin-top" => px 30 ]
                 ]
-                [ network.entryNeurons |> viewEntryLayer
-                , viewHiddenLayers gutter hidden
-                , viewLinks gutter network.entryNeurons hidden
+                [ viewEntryLayer network.entryNeurons
+                , viewHiddenLayers gutter network.layers
+                , viewLinks gutter networkWidth network
                 ]
             ]
 
@@ -164,27 +167,21 @@ output model w =
     let
         scale x a =
             a |> toFloat |> (*) x |> truncate
-
-        dim =
-            w |> scale 0.8
-
-        margin =
-            w |> scale 0.2 |> px
     in
         div
-            [ style [ "margin-left" => margin ] ]
+            []
             [ canvas
                 [ id "output"
                 , class "absolute"
                 , Html.Attributes.width <| Core.density
                 , Html.Attributes.height <| Core.density
                 , style
-                    [ "width" => px dim
-                    , "height" => px dim
+                    [ "width" => px w
+                    , "height" => px w
                     ]
                 ]
                 []
-            , lazy2 SvgViews.largeChart dim model.inputs
+            , lazy2 SvgViews.largeChart w model.inputs
             ]
 
 
@@ -310,9 +307,15 @@ viewHiddenLayers gutter hiddenLayers =
             ((List.indexedMap viewHiddenLayer hiddenLayers))
 
 
-viewLinks : (Int -> Int) -> List EntryNeuron -> List Layer -> Html Msg
-viewLinks gutter entryConfig layers =
+viewLinks : (Int -> Int) -> Int -> Network -> Html Msg
+viewLinks gutter maxWidth network =
     let
+        layers =
+            network.layers
+
+        entryConfig =
+            network.entryNeurons
+
         height =
             List.length entryConfig |> (*) geometry.vertical |> px
 
@@ -323,7 +326,14 @@ viewLinks gutter entryConfig layers =
             (x |> scaleX |> (+) geometry.boxSize |> toString) ++ "," ++ (y * geometry.vertical + (geometry.boxSize // 2) |> toString)
 
         moveTo x y =
-            (x |> scaleX |> toString) ++ "," ++ (y * geometry.vertical + (geometry.boxSize // 2) |> toString)
+            let
+                ( hor, vert ) =
+                    if x > List.length layers then
+                        ( maxWidth, y )
+                    else
+                        ( x |> scaleX, y )
+            in
+                (hor |> toString) ++ "," ++ (vert * geometry.vertical + (geometry.boxSize // 2) |> toString)
 
         dString x start stop =
             "M" ++ (moveFrom x start) ++ " " ++ (moveTo (x + 1) stop)
@@ -340,8 +350,8 @@ viewLinks gutter entryConfig layers =
         linkWidth w =
             w |> abs |> (*) 2 |> toString |> strokeWidth
 
-        path w x start stop =
-            Svg.path [ dString x start stop |> d, linkColor w, linkWidth w ] []
+        path w x left right =
+            Svg.path [ dString x left right |> d, linkColor w, linkWidth w ] []
 
         hidden =
             layers
@@ -366,10 +376,14 @@ viewLinks gutter entryConfig layers =
         output =
             case layers |> List.concat |> List.Extra.last of
                 Just finalLayer ->
-                    []
+                    network.outputNeuron.weights
+                        |> List.drop 1
+                        |> List.indexedMap (\i w -> path w (List.length network.layers) i 0)
 
                 Nothing ->
-                    []
+                    network.outputNeuron.weights
+                        |> List.drop 1
+                        |> List.map2 (\i w -> path w 0 i 0) entryXs
     in
         Svg.svg
             [ style [ "width" => "100%", "height" => height ]
