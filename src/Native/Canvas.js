@@ -33,6 +33,7 @@ function drawCanvases(network) {
   });
 }
 
+
 var _user$project$Native_Canvas = {
   'drawCanvases': drawCanvases,
 }

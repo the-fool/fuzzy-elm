@@ -8,6 +8,7 @@ import Network exposing (..)
 import Time exposing (Time)
 import Random.Pcg as Random
 import Buffer
+import Canvas
 
 
 type alias Column =
@@ -27,21 +28,6 @@ type Msg
     | ToggleEntry Network.EntryNeuronType
     | WindowResize ( Int, Int )
     | SetInput (Array Point)
-
-
-drawCanvas : Network -> Cmd a
-drawCanvas network =
-    let
-        hidden =
-            network.layers
-                |> List.concat
-
-        payload =
-            (network.outputNeuron :: hidden)
-                |> List.indexedMap (\i el -> Buffer.set i el network.canvasPayload)
-                |> always network.canvasPayload
-    in
-        Core.drawCanvases payload |> always Cmd.none
 
 
 alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Model -> Network
@@ -111,10 +97,10 @@ update message model =
             model ! []
 
         WindowResize ( width, height ) ->
-            { model | window = ( width, height ) } ! []
+            ( { model | window = ( width, height ) }, Cmd.batch [ Canvas.paintEntry model.network, Canvas.paintCanvas model.network ] )
 
         SetInput points ->
-            swapSeed { model | inputs = points } ! []
+            (resetCounter <| swapSeed { model | inputs = points }) ! []
 
         Begin ->
             { model | state = Going } ! []
@@ -139,7 +125,7 @@ update message model =
                         else
                             model.nTicks
                 }
-            , drawCanvas model.network
+            , Canvas.paintCanvas model.network
             )
 
         AddNeuron column ->
@@ -150,7 +136,7 @@ update message model =
                 action =
                     (+) 1
             in
-                ( resetCounter <| swapSeed { model | network = alterNeuronCount predicate action column model }, drawCanvas model.network )
+                ( resetCounter <| swapSeed { model | network = alterNeuronCount predicate action column model }, Canvas.paintCanvas model.network )
 
         RemoveNeuron column ->
             let
@@ -160,7 +146,7 @@ update message model =
                 action =
                     (+) -1
             in
-                ( resetCounter <| swapSeed { model | network = alterNeuronCount predicate action column model }, drawCanvas model.network )
+                ( resetCounter <| swapSeed { model | network = alterNeuronCount predicate action column model }, Canvas.paintCanvas model.network )
 
         AddLayer ->
             let
@@ -170,7 +156,7 @@ update message model =
                 action =
                     flip (++) <| [ 1 ]
             in
-                ( resetCounter <| swapSeed { model | network = alterLayerCount predicate action model }, drawCanvas model.network )
+                ( resetCounter <| swapSeed { model | network = alterLayerCount predicate action model }, Canvas.paintCanvas model.network )
 
         RemoveLayer ->
             let
@@ -180,7 +166,7 @@ update message model =
                 action =
                     List.reverse << List.drop 1 << List.reverse
             in
-                ( resetCounter <| swapSeed { model | network = alterLayerCount predicate action model }, drawCanvas model.network )
+                ( resetCounter <| swapSeed { model | network = alterLayerCount predicate action model }, Canvas.paintCanvas model.network )
 
         ToggleEntry kind ->
             ( resetCounter <|
@@ -189,5 +175,5 @@ update message model =
                         | network =
                             Network.networkFactory model.randomSeed model.network.activation (Network.toggleEntryNeuron model.network kind) (Network.getShape model.network)
                     }
-            , drawCanvas model.network
+            , Canvas.paintCanvas model.network
             )

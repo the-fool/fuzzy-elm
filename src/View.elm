@@ -4,7 +4,6 @@ import Html exposing (..)
 import Html.Lazy exposing (lazy2)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (class, id, style)
-import String
 import List.Extra
 import Models exposing (..)
 import Network exposing (..)
@@ -264,22 +263,19 @@ viewEntryLayer entryLayer =
                 []
 
         viewEntryNeuron y entryConfig =
-            div
+            canvas
                 [ id entryConfig.neuron.id
                 , onClick <| ToggleEntry entryConfig.kind
-                , class "absolute border rounded"
+                , class "absolute border"
+                , Html.Attributes.width <| Core.density
+                , Html.Attributes.height <| Core.density
                 , style
-                    ([ "color" => "red"
-                     , "font-size" => "xx-small"
-                     ]
-                        ++ square geometry.boxSize
+                    (square geometry.boxSize
                         ++ position ( 0, dy y )
                         ++ activeStyle entryConfig
                     )
                 ]
-                [ entryConfig.name
-                    |> Html.text
-                ]
+                []
     in
         div
             [ id "entry-layer" ]
@@ -408,11 +404,7 @@ viewNeuron gutter x y neuron =
                         ++ position ( dx, dy )
                     )
                 ]
-                [ neuron.weights
-                    |> List.map (toString >> String.left 6)
-                    |> String.join " "
-                    |> Html.text
-                ]
+                []
             ]
 
 

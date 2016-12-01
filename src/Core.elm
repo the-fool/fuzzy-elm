@@ -1,15 +1,8 @@
 module Core exposing (..)
 
-import Native.Canvas
 import List.Extra exposing (lift2)
 import Random.Pcg as Random exposing (Generator)
 import Array exposing (Array)
-import Buffer exposing (Buffer)
-
-
-drawCanvases : Buffer -> Buffer
-drawCanvases =
-    Native.Canvas.drawCanvases
 
 
 colors : { positive : String, negative : String }
