@@ -1,5 +1,6 @@
 
 var buffer = function(sz) {
+  console.log('new buffer');
   return new Array(sz);
 }
 

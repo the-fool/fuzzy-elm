@@ -34,9 +34,9 @@ geometry : Geometry
 geometry =
     { vertical = 65
     , boxSize = 40
-    , datasetsPcnt = 0.1
-    , networkPcnt = 0.65
-    , jumbo = 300
+    , datasetsPcnt = 0.15
+    , networkPcnt = 0.6
+    , jumbo = 200
     , networkMarginRight = 100
     }
 
