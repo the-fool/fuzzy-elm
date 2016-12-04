@@ -3,7 +3,7 @@ module View exposing (..)
 import Html exposing (..)
 import Html.Lazy exposing (lazy2)
 import Html.Events exposing (onClick)
-import Html.Attributes exposing (class, id, style)
+import Html.Attributes exposing (attribute, class, id, style)
 import List.Extra
 import Models exposing (..)
 import Network exposing (..)
@@ -13,6 +13,7 @@ import Svg
 import Svg.Attributes exposing (d, stroke, strokeWidth)
 import Datasets exposing (xorData, gaussData, circleData)
 import Core exposing (colors)
+import Polymer.Paper
 
 
 (=>) : a -> b -> ( a, b )
@@ -96,14 +97,32 @@ header =
 controls : Model -> Html Msg
 controls model =
     let
-        toggleButton =
+        buttonConfig =
             if model.state == Paused then
-                button [ class "btn", onClick Begin ] [ text "Go" ]
+                { msg = Begin
+                , text = "Go"
+                , bkgrnd = "#4caf50"
+                }
             else
-                button [ class "btn", onClick Pause ] [ text "Stop" ]
+                { msg = Pause
+                , text = "Stop"
+                , bkgrnd = "#f44336"
+                }
+
+        toggleButton =
+            Polymer.Paper.button
+                [ attribute "raised" "raised"
+                , attribute "toggles" "toggles"
+                , onClick buttonConfig.msg
+                , style
+                    [ "background" => buttonConfig.bkgrnd
+                    , "color" => "white"
+                    ]
+                ]
+                [ text buttonConfig.text ]
 
         reset =
-            button [ class "btn", onClick Reset ] [ text "Reset" ]
+            Polymer.Paper.button [ onClick Reset ] [ text "Reset" ]
 
         ticker =
             span [] [ toString model.nTicks |> text ]

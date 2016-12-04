@@ -2,14 +2,19 @@ const path = require("path");
 
 module.exports = {
   entry: {
-    app: [
-      './src/index.js'
-    ]
+    app: './src/index.js',
+    vendor: './src/vendor.js'
+
   },
 
   output: {
     path: path.resolve(__dirname + '/dist'),
     filename: '[name].js',
+  },
+
+  resolve: {
+    modules: [root('src'), root('node_modules')],
+    //extensions: ['.js', '.elm']
   },
 
   module: {
@@ -57,6 +62,11 @@ module.exports = {
     inline: true,
     stats: { colors: true },
   },
-
-
 };
+
+
+// Helper functions
+function root(args) {
+  args = Array.prototype.slice.call(arguments, 0);
+  return path.join.apply(path, [__dirname].concat(args));
+}

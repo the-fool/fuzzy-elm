@@ -1,11 +1,24 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <meta charset="utf-8" />
-    <title>Elm Fuzzy Toolkit</title>
-  </head>
-  <body style="background: #f5f6f7;">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"></script>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <script src="/vendor.js"></script>
+    <script>
+        window.Polymer = {
+            dom: 'shadow'
+        };
+    </script>
+    <link rel="import" href="/bower_components/polymer/polymer.html">
+    <link rel="import" href="/bower_components/paper-button/paper-button.html">
+    <title>Elm Brain</title>
+</head>
+
+<body style="background: #f5f6f7;">
+    <div id="root"></div>
     <script src="/app.js"></script>
-  </body>
+</body>
+
 </html>

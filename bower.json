@@ -1,0 +1,18 @@
+{
+  "name": "fuzelm",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "the-fool <sketchbang@gmail.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/the-fool/fuzzy-elm",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
