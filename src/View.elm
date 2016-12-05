@@ -143,7 +143,9 @@ controls model =
         error =
             span
                 [ style
-                    [ "float" => "right" ]
+                    [ "float" => "right"
+                    , "margin-right" => "20px"
+                    ]
                 ]
                 [ toString model.network.error |> String.left 5 |> (++) "Error: " |> text ]
     in

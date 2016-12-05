@@ -86,7 +86,7 @@ onNetworkChange model =
     model
         |> swapSeed
         |> resetCounter
-        |> \m -> ( m, Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network) )
+        |> \m -> ( { m | network = processNetwork m }, Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network) )
 
 
 alterNeuronCount : (Int -> Bool) -> (Int -> Int) -> Int -> Model -> Network
