@@ -88,7 +88,7 @@ view model =
 metaConfig : Model -> Html Msg
 metaConfig model =
     div [ style [ "margin-top" => "30px" ] ]
-        [ h4 [] [ text "Select inputs:" ]
+        [ p [] [ text "Select dataset:" ]
         , dataSets model
         ]
 
@@ -147,21 +147,11 @@ controls model =
                     ]
                 ]
                 [ "Epochs: " ++ toString model.nTicks |> text ]
-
-        error =
-            span
-                [ style
-                    [ "float" => "right"
-                    , "margin-right" => "20px"
-                    ]
-                ]
-                [ toString model.network.error |> String.left 5 |> (++) "Error: " |> text ]
     in
         div [ class "controls" ]
             [ reset
             , toggleButton
             , ticker
-            , error
             ]
 
 
@@ -256,10 +246,20 @@ output model w =
     let
         scale x a =
             a |> toFloat |> (*) x |> truncate
+
+        error =
+            div
+                [ style
+                    [ "margin-bottom" => "20px"
+                    ]
+                ]
+                [ toString model.network.error |> String.left 5 |> (++) "Error: " |> text ]
     in
         div
             []
-            [ canvas
+            [ h3 [ style [ "font-weight" => "100" ] ] [ text "OUTPUT" ]
+            , error
+            , canvas
                 [ id "output"
                 , class "absolute"
                 , Html.Attributes.width <| Core.density
@@ -305,7 +305,7 @@ viewModNeurons gutter layers =
         buttonStyle =
             square 20
                 ++ [ "padding" => px 0
-                   , "margin-left" => px 7
+                   , "margin-left" => px 4
                    , "background-color" => "grey"
                    ]
                 |> style
@@ -484,12 +484,12 @@ viewLinks gutter maxWidth network =
                 Just finalLayer ->
                     network.outputNeuron.weights
                         |> List.drop 1
-                        |> List.indexedMap (\i w -> doublePath w (List.length network.layers) i 0)
+                        |> List.indexedMap (\i w -> doublePath w (List.length network.layers) i 1)
 
                 Nothing ->
                     network.outputNeuron.weights
                         |> List.drop 1
-                        |> List.map2 (\i w -> doublePath w 0 i 0) entryXs
+                        |> List.map2 (\i w -> doublePath w 0 i 1) entryXs
     in
         Svg.svg
             [ style [ "width" => "100%", "height" => height ]
