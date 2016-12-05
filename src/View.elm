@@ -15,6 +15,7 @@ import Svg.Attributes exposing (d, stroke, strokeWidth)
 import Datasets exposing (xorData, gaussData, circleData)
 import Core exposing (colors)
 import Polymer.Paper
+import String
 
 
 (=>) : a -> b -> ( a, b )
@@ -140,8 +141,7 @@ controls model =
                 [ "Epochs: " ++ toString model.nTicks |> text ]
     in
         div [ class "controls" ]
-            [ h1 [] [ text "controls" ]
-            , reset
+            [ reset
             , toggleButton
             , ticker
             ]
@@ -222,9 +222,15 @@ hovercard model =
                 , "display" => display
                 , "left" => px (model.hoverCard.x + 10)
                 , "top" => px (model.hoverCard.y - 10)
+                , "background" => "white"
+                , "border-radius" => "5px"
+                , "border" => "1px solid #aaa"
+                , "cursor" => "default"
+                , "z-index" => "1000"
+                , "padding" => "5px"
                 ]
             ]
-            [ model.hoverCard.weight |> toString |> text ]
+            [ model.hoverCard.weight |> toString |> String.left 5 |> (++) "Weight: " |> text ]
 
 
 output : Model -> Int -> Html Msg
