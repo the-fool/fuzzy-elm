@@ -122,7 +122,11 @@ controls model =
                 [ text buttonConfig.text ]
 
         reset =
-            Polymer.Paper.button [ onClick Reset ] [ text "Reset" ]
+            Polymer.Paper.button
+                [ attribute "raised" "raised"
+                , onClick Reset
+                ]
+                [ text "Reset" ]
 
         ticker =
             span [] [ toString model.nTicks |> text ]
@@ -139,7 +143,7 @@ dataSets : Model -> Html Msg
 dataSets model =
     let
         dataSelector ( name, handler ) =
-            div
+            Polymer.Paper.item
                 [ handler model.randomSeed
                     |> SetInput
                     |> onClick
@@ -150,8 +154,18 @@ dataSets model =
             [ ( "XOR", xorData ), ( "GAUSSIAN", gaussData ), ( "CIRCLE", circleData ) ]
     in
         div
-            [ class "datasets-wrapper" ]
-            (List.map dataSelector dataOptions)
+            [ class "datasets-wrapper"
+            , style <|
+                shadow
+                    :: [ "margin-right" => px 30
+                       , "margin-top" => px 30
+                       , "cursor" => "pointer"
+                       ]
+            ]
+            [ Polymer.Paper.listbox
+                [ attribute "selected" "0" ]
+                (List.map dataSelector dataOptions)
+            ]
 
 
 networkView : Int -> Network -> Html Msg
@@ -440,3 +454,8 @@ position ( x, y ) =
 square : Int -> List ( String, String )
 square w =
     [ ( "width", px w ), ( "height", px w ) ]
+
+
+shadow : ( String, String )
+shadow =
+    "box-shadow" => "0 2px 2px 0 rgba(0, 0, 0, 0.14),0 1px 5px 0 rgba(0, 0, 0, 0.12),0 3px 1px -2px rgba(0, 0, 0, 0.2)"
