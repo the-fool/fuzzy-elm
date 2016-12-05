@@ -10,6 +10,7 @@ import Network exposing (..)
 import Update exposing (Msg(..))
 import SvgViews
 import Svg
+import Svg.Events
 import Svg.Attributes exposing (d, stroke, strokeWidth)
 import Datasets exposing (xorData, gaussData, circleData)
 import Core exposing (colors)
@@ -387,7 +388,13 @@ viewLinks gutter maxWidth network =
             w |> abs |> (*) 2 |> toString |> strokeWidth
 
         path w x left right =
-            Svg.path [ dString x left right |> d, linkColor w, linkWidth w ] []
+            Svg.path
+                [ Svg.Events.on "mouseover" Update.mouseEventDecoder
+                , dString x left right |> d
+                , linkColor w
+                , linkWidth w
+                ]
+                []
 
         hidden =
             layers

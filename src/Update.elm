@@ -9,11 +9,17 @@ import Time exposing (Time)
 import Random.Pcg as Random
 import Canvas
 import Task
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Extra as Decode exposing ((|:))
 import Buffer exposing (Buffer)
 
 
 type alias Column =
     Int
+
+
+type alias Position =
+    { x : Int, y : Int }
 
 
 type Msg
@@ -30,6 +36,16 @@ type Msg
     | WindowResize ( Int, Int )
     | SetInput (Array Point)
     | PaintCanvases Buffer
+    | ShowTooltip Position
+
+
+mouseEventDecoder : Decoder Msg
+mouseEventDecoder =
+    Decode.succeed ShowTooltip
+        |: (Decode.succeed Position
+                |: (Decode.field "layerX" Decode.int)
+                |: (Decode.field "layerY" Decode.int)
+           )
 
 
 alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Model -> Network
@@ -108,6 +124,9 @@ update message model =
 
         PaintCanvases payload ->
             model ! [ Canvas.paintCanvas payload ]
+
+        ShowTooltip pos ->
+            pos |> Debug.log "pos" |> always (model ! [])
 
         WindowResize ( width, height ) ->
             ( { model | window = ( width, height ) }, Cmd.batch [ Canvas.paintEntry model.network, Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network) ] )
