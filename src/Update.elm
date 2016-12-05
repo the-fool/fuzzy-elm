@@ -36,12 +36,12 @@ type Msg
     | WindowResize ( Int, Int )
     | SetInput (Array Point)
     | PaintCanvases Buffer
-    | ShowTooltip Position
+    | ShowHoverCard Float Position
 
 
-mouseEventDecoder : Decoder Msg
-mouseEventDecoder =
-    Decode.succeed ShowTooltip
+mouseEventDecoder : Float -> Decoder Msg
+mouseEventDecoder weight =
+    Decode.succeed (ShowHoverCard weight)
         |: (Decode.succeed Position
                 |: (Decode.field "layerX" Decode.int)
                 |: (Decode.field "layerY" Decode.int)
@@ -125,8 +125,12 @@ update message model =
         PaintCanvases payload ->
             model ! [ Canvas.paintCanvas payload ]
 
-        ShowTooltip pos ->
-            pos |> Debug.log "pos" |> always (model ! [])
+        ShowHoverCard weight pos ->
+            let
+                newHoverCard =
+                    { x = pos.x, y = pos.y, visible = True, weight = weight }
+            in
+                { model | hoverCard = newHoverCard } ! []
 
         WindowResize ( width, height ) ->
             ( { model | window = ( width, height ) }, Cmd.batch [ Canvas.paintEntry model.network, Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network) ] )

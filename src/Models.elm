@@ -21,6 +21,15 @@ type alias Model =
     , state : NetworkState
     , nTicks : Int
     , randomSeed : Random.Seed
+    , hoverCard : HoverCard
+    }
+
+
+type alias HoverCard =
+    { x : Int
+    , y : Int
+    , weight : Float
+    , visible : Bool
     }
 
 
@@ -42,4 +51,5 @@ initialModel =
     , state = Paused
     , nTicks = 0
     , randomSeed = seed0
+    , hoverCard = { x = 0, y = 0, weight = 0.0, visible = False }
     }

@@ -76,7 +76,7 @@ view model =
                 , div [ class "visuals" ]
                     [ column datasetsWidth <| dataSets model
                     , div [ class "nodes clearfix", style [ "margin-left" => (datasetsWidth |> factor |> px) ] ]
-                        [ column networkWidth <| networkView (factor networkWidth) model.network
+                        [ column networkWidth <| networkView model (factor networkWidth)
                         , column outputWidth <| output model (factor outputWidth)
                         ]
                     ]
@@ -176,9 +176,12 @@ dataSets model =
             ]
 
 
-networkView : Int -> Network -> Html Msg
-networkView networkWidth network =
+networkView : Model -> Int -> Html Msg
+networkView model networkWidth =
     let
+        network =
+            model.network
+
         gutter =
             networkWidth |> (+) -geometry.networkMarginRight |> (+) -(geometry.boxSize + 20) |> (flip (//)) (List.length network.layers) |> (*)
     in
@@ -198,8 +201,30 @@ networkView networkWidth network =
                 [ viewEntryLayer network.entryNeurons
                 , viewHiddenLayers gutter network.layers
                 , viewLinks gutter networkWidth network
+                , hovercard model
                 ]
             ]
+
+
+hovercard : Model -> Html Msg
+hovercard model =
+    let
+        display =
+            if model.hoverCard.visible then
+                "block"
+            else
+                "none"
+    in
+        div
+            [ id "hovercard"
+            , style
+                [ "position" => "absolute"
+                , "display" => display
+                , "left" => px (model.hoverCard.x + 10)
+                , "top" => px (model.hoverCard.y - 10)
+                ]
+            ]
+            [ model.hoverCard.weight |> toString |> text ]
 
 
 output : Model -> Int -> Html Msg
@@ -389,17 +414,31 @@ viewLinks gutter maxWidth network =
 
         path w x left right =
             Svg.path
-                [ Svg.Events.on "mouseover" Update.mouseEventDecoder
-                , dString x left right |> d
+                [ dString x left right |> d
                 , linkColor w
                 , linkWidth w
                 ]
                 []
 
+        invisiPath w x left right =
+            Svg.path
+                [ Svg.Events.on "mouseover" (Update.mouseEventDecoder w)
+                , dString x left right |> d
+                , style
+                    [ "opacity" => "0"
+                    , "stroke-width" => "8"
+                    , "stroke" => "black"
+                    ]
+                ]
+                []
+
+        doublePath w x left right =
+            [ invisiPath w x left right, path w x left right ]
+
         hidden =
             layers
                 |> List.drop 1
-                |> List.indexedMap (\x -> List.indexedMap (\y -> .weights >> List.drop 1 >> List.indexedMap (\i w -> path w (x + 1) i y)))
+                |> List.indexedMap (\x -> List.indexedMap (\y -> .weights >> List.drop 1 >> List.indexedMap (\i w -> doublePath w (x + 1) i y)))
                 |> List.concat
                 |> List.concat
 
@@ -413,7 +452,7 @@ viewLinks gutter maxWidth network =
             layers
                 |> List.take 1
                 |> List.concat
-                |> List.indexedMap (\i n -> n.weights |> List.map2 (\j w -> path w 0 j i) entryXs)
+                |> List.indexedMap (\i n -> n.weights |> List.map2 (\j w -> doublePath w 0 j i) entryXs)
                 |> List.concat
 
         output =
@@ -421,17 +460,17 @@ viewLinks gutter maxWidth network =
                 Just finalLayer ->
                     network.outputNeuron.weights
                         |> List.drop 1
-                        |> List.indexedMap (\i w -> path w (List.length network.layers) i 0)
+                        |> List.indexedMap (\i w -> doublePath w (List.length network.layers) i 0)
 
                 Nothing ->
                     network.outputNeuron.weights
                         |> List.drop 1
-                        |> List.map2 (\i w -> path w 0 i 0) entryXs
+                        |> List.map2 (\i w -> doublePath w 0 i 0) entryXs
     in
         Svg.svg
             [ style [ "width" => "100%", "height" => height ]
             ]
-            (entry ++ hidden ++ output)
+            (List.concat (entry ++ hidden ++ output))
 
 
 viewNeuron : (Int -> Int) -> Int -> Int -> Neuron -> Html Msg
