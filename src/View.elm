@@ -75,7 +75,7 @@ view model =
             , div [ class "ui-wrapper clearfix mx-auto", style [ "width" => px maxWidth ] ]
                 [ controls model
                 , div [ class "visuals" ]
-                    [ column datasetsWidth <| dataSets model
+                    [ column datasetsWidth <| metaConfig model
                     , div [ class "nodes clearfix", style [ "margin-left" => (datasetsWidth |> factor |> px) ] ]
                         [ column networkWidth <| networkView model (factor networkWidth)
                         , column outputWidth <| output model (factor outputWidth)
@@ -83,6 +83,14 @@ view model =
                     ]
                 ]
             ]
+
+
+metaConfig : Model -> Html Msg
+metaConfig model =
+    div [ style [ "margin-top" => "30px" ] ]
+        [ h4 [] [ text "Select inputs:" ]
+        , dataSets model
+        ]
 
 
 header : Html Msg
@@ -173,12 +181,12 @@ dataSets model =
     in
         div
             [ class "datasets-wrapper"
-            , style <|
-                shadow
-                    :: [ "margin-right" => px 30
-                       , "margin-top" => px 30
-                       , "cursor" => "pointer"
-                       ]
+            , shadow
+                :: [ "margin-right" => px 30
+                   , "margin-top" => px 0
+                   , "cursor" => "pointer"
+                   ]
+                |> style
             ]
             [ Polymer.Paper.listbox
                 [ attribute "selected" "0" ]
