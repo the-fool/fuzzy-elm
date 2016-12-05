@@ -17,6 +17,7 @@ type alias Network =
     , entryNeurons : List EntryNeuron
     , outputNeuron : Neuron
     , canvasPayload : Buffer
+    , error : Float
     }
 
 
@@ -271,7 +272,9 @@ deltas outputs gradients =
 
 batchLearn : Network -> Array Datasets.Point -> Network
 batchLearn network inputs =
-    Array.foldl learn network inputs
+    { network | error = 0 }
+        |> \n ->
+            Array.foldl learn n inputs
 
 
 learn : Datasets.Point -> Network -> Network
@@ -285,6 +288,9 @@ learn { coord, label } network =
 
         derivFunc =
             activationDerivative network.activation
+
+        squaredError =
+            outputs |> List.concat |> \o -> List.Extra.last o ? (toFloat label) |> (-) (toFloat label) |> \er -> (er ^ 2) / 2
 
         outputDeltas =
             case List.Extra.last outputs of
@@ -305,6 +311,7 @@ learn { coord, label } network =
             |>
                 deltas outputs
             |> adjustNetwork network
+            |> \n -> { n | error = n.error + squaredError }
 
 
 getInputVector : Network -> ( Float, Float ) -> List Float
@@ -494,6 +501,7 @@ networkFactory seed activation entryNeurons layerDims =
             , activation = activation
             , entryNeurons = entryNeuronConfig
             , canvasPayload = Buffer.buffer (List.concat layers |> List.length |> (+) 1)
+            , error = 0.0
             }
 
 

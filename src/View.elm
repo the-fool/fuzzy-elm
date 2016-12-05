@@ -139,11 +139,19 @@ controls model =
                     ]
                 ]
                 [ "Epochs: " ++ toString model.nTicks |> text ]
+
+        error =
+            span
+                [ style
+                    [ "float" => "right" ]
+                ]
+                [ toString model.network.error |> String.left 5 |> (++) "Error: " |> text ]
     in
         div [ class "controls" ]
             [ reset
             , toggleButton
             , ticker
+            , error
             ]
 
 
