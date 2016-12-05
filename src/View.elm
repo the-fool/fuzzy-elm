@@ -36,7 +36,7 @@ geometry =
     { vertical = 65
     , boxSize = 40
     , datasetsPcnt = 0.15
-    , networkPcnt = 0.6
+    , networkPcnt = 0.65
     , jumbo = 200
     , networkMarginRight = 100
     }
@@ -129,7 +129,14 @@ controls model =
                 [ text "Reset" ]
 
         ticker =
-            span [] [ toString model.nTicks |> text ]
+            span
+                [ style
+                    [ "margin-left" => px 20
+                    , "font-size" => "larger"
+                    , "font-weight" => "100"
+                    ]
+                ]
+                [ "Epochs: " ++ toString model.nTicks |> text ]
     in
         div [ class "controls" ]
             [ h1 [] [ text "controls" ]
