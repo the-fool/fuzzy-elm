@@ -448,9 +448,21 @@ changeShape : Random.Seed -> Network -> List Int -> Network
 changeShape seed network layerDims =
     let
         entry =
-            network.entryNeurons |> List.filter .active |> List.map .kind
+            network |> getActiveEntry
     in
         networkFactory seed network.activation entry layerDims
+
+
+shuffleNetwork : Random.Seed -> Network -> Network
+shuffleNetwork seed network =
+    let
+        entries =
+            network |> getActiveEntry
+
+        shape =
+            getShape network
+    in
+        networkFactory seed network.activation entries shape
 
 
 networkFactory : Random.Seed -> Activation -> List EntryNeuronType -> List Int -> Network
@@ -483,6 +495,13 @@ networkFactory seed activation entryNeurons layerDims =
             , entryNeurons = entryNeuronConfig
             , canvasPayload = Buffer.buffer (List.concat layers |> List.length |> (+) 1)
             }
+
+
+getActiveEntry : Network -> List EntryNeuronType
+getActiveEntry netwokr =
+    netwokr.entryNeurons
+        |> List.filter .active
+        |> List.map .kind
 
 
 getShape : Network -> List Int

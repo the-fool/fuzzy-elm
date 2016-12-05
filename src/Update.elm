@@ -113,7 +113,7 @@ update message model =
             ( { model | window = ( width, height ) }, Cmd.batch [ Canvas.paintEntry model.network, Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network) ] )
 
         SetInput points ->
-            (resetCounter <| swapSeed { model | inputs = points }) ! []
+            { model | inputs = points, network = (Network.shuffleNetwork model.randomSeed model.network) } |> onNetworkChange
 
         Begin ->
             { model | state = Going } ! []
