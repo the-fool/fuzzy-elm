@@ -13,7 +13,7 @@ var color = d3.scale.quantize()
 
 
 function drawCanvases(network) {
-  // just draw final output for now
+    console.log(network);
   network.forEach(function(neuron) {
     var canvas = document.getElementById(neuron.id);
     if (canvas) {
@@ -29,7 +29,7 @@ function drawCanvases(network) {
           img.data[++p] = 160;
       }
       ctx.putImageData(img, 0, 0);
-    }
+    } 
   });
 }
 

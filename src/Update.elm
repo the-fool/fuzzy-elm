@@ -7,8 +7,9 @@ import Datasets exposing (Point)
 import Network exposing (..)
 import Time exposing (Time)
 import Random.Pcg as Random
-import Buffer
 import Canvas
+import Task
+import Buffer exposing (Buffer)
 
 
 type alias Column =
@@ -28,6 +29,7 @@ type Msg
     | ToggleEntry Network.EntryNeuronType
     | WindowResize ( Int, Int )
     | SetInput (Array Point)
+    | PaintCanvases Buffer
 
 
 alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Model -> Network
@@ -48,8 +50,8 @@ alterLayerCount predicate action model =
         Network.changeShape model.randomSeed oldNetwork newShape
 
 
-doNetwork : Model -> Network
-doNetwork model =
+processNetwork : Model -> Network
+processNetwork model =
     let
         shuffledArray =
             Random.step (Core.shuffle model.inputs) model.randomSeed |> Tuple.first
@@ -61,6 +63,14 @@ doNetwork model =
 resetCounter : Model -> Model
 resetCounter model =
     { model | nTicks = 0 }
+
+
+onNetworkChange : Model -> ( Model, Cmd Msg )
+onNetworkChange model =
+    model
+        |> swapSeed
+        |> resetCounter
+        |> \m -> ( m, Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network) )
 
 
 alterNeuronCount : (Int -> Bool) -> (Int -> Int) -> Int -> Model -> Network
@@ -96,8 +106,11 @@ update message model =
         NoOp ->
             model ! []
 
+        PaintCanvases payload ->
+            model ! [ Canvas.paintCanvas payload ]
+
         WindowResize ( width, height ) ->
-            ( { model | window = ( width, height ) }, Cmd.batch [ Canvas.paintEntry model.network, Canvas.paintCanvas model.network ] )
+            ( { model | window = ( width, height ) }, Cmd.batch [ Canvas.paintEntry model.network, Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network) ] )
 
         SetInput points ->
             (resetCounter <| swapSeed { model | inputs = points }) ! []
@@ -114,7 +127,7 @@ update message model =
         Learn time ->
             ( swapSeed
                 { model
-                    | network = doNetwork model
+                    | network = processNetwork model
                     , nTicks =
                         {- There is some sort of race condition with switching out animation frame subs,
                            which results in the ticks being incremented once after the state should be paused,
@@ -125,7 +138,7 @@ update message model =
                         else
                             model.nTicks
                 }
-            , Canvas.paintCanvas model.network
+            , Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network)
             )
 
         AddNeuron column ->
@@ -136,7 +149,7 @@ update message model =
                 action =
                     (+) 1
             in
-                ( resetCounter <| swapSeed { model | network = alterNeuronCount predicate action column model }, Canvas.paintCanvas model.network )
+                { model | network = alterNeuronCount predicate action column model } |> onNetworkChange
 
         RemoveNeuron column ->
             let
@@ -146,7 +159,7 @@ update message model =
                 action =
                     (+) -1
             in
-                ( resetCounter <| swapSeed { model | network = alterNeuronCount predicate action column model }, Canvas.paintCanvas model.network )
+                { model | network = alterNeuronCount predicate action column model } |> onNetworkChange
 
         AddLayer ->
             let
@@ -156,7 +169,7 @@ update message model =
                 action =
                     flip (++) <| [ 1 ]
             in
-                ( resetCounter <| swapSeed { model | network = alterLayerCount predicate action model }, Canvas.paintCanvas model.network )
+                { model | network = alterLayerCount predicate action model } |> onNetworkChange
 
         RemoveLayer ->
             let
@@ -166,14 +179,11 @@ update message model =
                 action =
                     List.reverse << List.drop 1 << List.reverse
             in
-                ( resetCounter <| swapSeed { model | network = alterLayerCount predicate action model }, Canvas.paintCanvas model.network )
+                { model | network = alterLayerCount predicate action model } |> onNetworkChange
 
         ToggleEntry kind ->
-            ( resetCounter <|
-                swapSeed
-                    { model
-                        | network =
-                            Network.networkFactory model.randomSeed model.network.activation (Network.toggleEntryNeuron model.network kind) (Network.getShape model.network)
-                    }
-            , Canvas.paintCanvas model.network
-            )
+            { model
+                | network =
+                    Network.networkFactory model.randomSeed model.network.activation (Network.toggleEntryNeuron model.network kind) (Network.getShape model.network)
+            }
+                |> onNetworkChange

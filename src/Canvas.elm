@@ -3,6 +3,7 @@ module Canvas exposing (..)
 import Native.Canvas
 import Buffer exposing (Buffer)
 import Network exposing (Network)
+import Task
 
 
 drawCanvases : Buffer -> Buffer
@@ -25,16 +26,19 @@ paintEntry network =
         drawCanvases payload |> always Cmd.none
 
 
-paintCanvas : Network -> Cmd a
-paintCanvas network =
+generateCanvasPayload : Network -> Task.Task x Buffer
+generateCanvasPayload network =
     let
         hidden =
             network.layers
                 |> List.concat
-
-        payload =
-            (network.outputNeuron :: hidden)
-                |> List.indexedMap (\i el -> Buffer.set i el network.canvasPayload)
-                |> always network.canvasPayload
     in
-        drawCanvases payload |> always Cmd.none
+        (network.outputNeuron :: hidden)
+            |> List.indexedMap (\i el -> Buffer.set i el network.canvasPayload)
+            |> always network.canvasPayload
+            |> Task.succeed
+
+
+paintCanvas : Buffer -> Cmd a
+paintCanvas payload =
+    drawCanvases payload |> always Cmd.none
