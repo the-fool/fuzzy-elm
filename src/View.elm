@@ -433,7 +433,7 @@ viewLinks gutter maxWidth network =
                 []
 
         doublePath w x left right =
-            [ invisiPath w x left right, path w x left right ]
+            [ path w x left right, invisiPath w x left right ]
 
         hidden =
             layers
