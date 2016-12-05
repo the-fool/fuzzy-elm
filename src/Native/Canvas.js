@@ -13,24 +13,29 @@ var color = d3.scale.quantize()
 
 
 function drawCanvases(network) {
-    console.log(network);
   network.forEach(function(neuron) {
     var canvas = document.getElementById(neuron.id);
     if (canvas) {
-      var density = canvas.width;
-      var data = neuron.outputs;
-      var ctx = canvas.getContext('2d');
-      var img = ctx.createImageData(density, density);
-      for (let i = 0, p = -1; i < density*density; i++) {
-          var c = d3.rgb(color(data[i]));
-          img.data[++p] = c.r;
-          img.data[++p] = c.g;
-          img.data[++p] = c.b;
-          img.data[++p] = 160;
-      }
-      ctx.putImageData(img, 0, 0);
-    } 
+      doPaint(canvas, neuron);
+    } else {
+      window.setTimeout(function() {doPaint(document.getElementById(neuron.id), neuron);},100);
+    }
   });
+}
+
+function doPaint(canvas, neuron) {
+  var density = canvas.width;
+  var data = neuron.outputs;
+  var ctx = canvas.getContext('2d');
+  var img = ctx.createImageData(density, density);
+  for (let i = 0, p = -1; i < density*density; i++) {
+      var c = d3.rgb(color(data[i]));
+      img.data[++p] = c.r;
+      img.data[++p] = c.g;
+      img.data[++p] = c.b;
+      img.data[++p] = 160;
+  }
+  ctx.putImageData(img, 0, 0);
 }
 
 
