@@ -35,7 +35,7 @@ type alias Geometry =
 
 geometry : Geometry
 geometry =
-    { vertical = 65
+    { vertical = 75
     , boxSize = 40
     , datasetsPcnt = 0.15
     , networkPcnt = 0.65
@@ -409,10 +409,25 @@ viewEntryLayer entryLayer =
                     )
                 ]
                 []
+
+        entryLabels layer =
+            layer
+                |> List.indexedMap
+                    (\y n ->
+                        div
+                            [ class "entry-label absolute"
+                            , style <|
+                                (position ( 0, -18 + dy y ))
+                                    ++ [ "font-size" => "small" ]
+                            ]
+                            [ text n.name ]
+                    )
     in
         div
             [ id "entry-layer" ]
-            (List.indexedMap (viewEntryNeuron) entryLayer)
+            ((entryLabels entryLayer)
+                ++ (List.indexedMap (viewEntryNeuron) entryLayer)
+            )
 
 
 viewHiddenLayers : (Int -> Int) -> List Layer -> Html Msg
