@@ -210,7 +210,7 @@ networkView model networkWidth =
     in
         div
             [ class "network-wrapper"
-            , style [ "margin-top" => "50px" ]
+            , style [ "margin-top" => "20px" ]
             ]
             [ div
                 [ class "layer-editor-wrapper"
@@ -297,6 +297,7 @@ viewModLayers layers =
         [ style
             [ "display" => "flex"
             , "justify-content" => "center"
+            , "padding-bottom" => "15px"
             ]
         ]
         [ button
@@ -464,6 +465,7 @@ viewLinks gutter maxWidth network =
         invisiPath w x left right =
             Svg.path
                 [ Svg.Events.on "mouseover" (Update.mouseEventDecoder w)
+                , Svg.Events.onMouseOut HideHoverCard
                 , dString x left right |> d
                 , style
                     [ "opacity" => "0"

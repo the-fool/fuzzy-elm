@@ -37,6 +37,7 @@ type Msg
     | SetInput (Array Point)
     | PaintCanvases Buffer
     | ShowHoverCard Float Position
+    | HideHoverCard
 
 
 mouseEventDecoder : Float -> Decoder Msg
@@ -124,6 +125,9 @@ update message model =
 
         PaintCanvases payload ->
             model ! [ Canvas.paintCanvas payload ]
+
+        HideHoverCard ->
+            { model | hoverCard = { x = 0, y = 0, visible = False, weight = 0 } } ! []
 
         ShowHoverCard weight pos ->
             let
