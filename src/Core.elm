@@ -7,8 +7,8 @@ import Array exposing (Array)
 
 colors : { positive : String, negative : String }
 colors =
-    { negative = "rgb(245, 147, 34)"
-    , positive = "rgb(8, 119, 189)"
+    { negative = "#4EA701"
+    , positive = "#2874ae"
     }
 
 
