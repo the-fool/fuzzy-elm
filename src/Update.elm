@@ -148,7 +148,7 @@ update message model =
                         Stock kind ->
                             Datasets.getData kind model.randomSeed
             in
-                { model | inputs = newPoints, network = (Network.shuffleNetwork model.randomSeed model.network), best = 0 } |> onNetworkChange
+                { model | dataMode = mode, inputs = newPoints, network = (Network.shuffleNetwork model.randomSeed model.network), best = 0 } |> onNetworkChange
 
         Begin ->
             { model | state = Going } ! []

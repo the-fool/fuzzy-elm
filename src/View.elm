@@ -295,6 +295,33 @@ output model w =
                     ]
                 ]
                 [ errorText model.network.error ]
+
+        customDisplay =
+            if model.dataMode == Custom then
+                [ "display" => "block" ]
+            else
+                [ "display" => "none" ]
+
+        swatchDim =
+            10
+
+        swatch i color =
+            span
+                [ style
+                    [ "display" => "inline-block"
+                    , "width" => px swatchDim
+                    , "height" => px swatchDim
+                    , "background" => color
+                    , "margin-left" => px swatchDim
+                    ]
+                ]
+                []
+
+        paintControls =
+            div [ style (customDisplay ++ [ "height" => px swatchDim ]) ]
+                [ swatch 0 colors.negative
+                , swatch 1 colors.positive
+                ]
     in
         div
             []
@@ -312,6 +339,7 @@ output model w =
                 ]
                 []
             , lazy2 SvgViews.largeChart w model.inputs
+            , paintControls
             ]
 
 

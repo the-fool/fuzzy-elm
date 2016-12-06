@@ -30,7 +30,7 @@ type alias Model =
     , hoverCard : HoverCard
     , best : Int
     , customData : Array Point
-    , dataset : DataMode
+    , dataMode : DataMode
     }
 
 
@@ -63,5 +63,5 @@ initialModel =
     , hoverCard = { x = 0, y = 0, weight = 0.0, visible = False }
     , best = 0
     , customData = Array.fromList []
-    , dataset = Stock Datasets.XOR
+    , dataMode = Stock Datasets.XOR
     }
