@@ -136,7 +136,7 @@ update message model =
             ( { model | window = ( width, height ) }, Cmd.batch [ Canvas.paintEntry model.network, Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network) ] )
 
         SetInput points ->
-            { model | inputs = points, network = (Network.shuffleNetwork model.randomSeed model.network) } |> onNetworkChange
+            { model | inputs = points, network = (Network.shuffleNetwork model.randomSeed model.network), best = 0 } |> onNetworkChange
 
         Begin ->
             { model | state = Going } ! []
@@ -145,7 +145,7 @@ update message model =
             { model | state = Paused } ! []
 
         Reset ->
-            { model | state = Paused, nTicks = 0 } ! []
+            { model | state = Paused, nTicks = 0, network = (Network.shuffleNetwork model.randomSeed model.network) } |> onNetworkChange
 
         Learn time ->
             let

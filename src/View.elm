@@ -151,7 +151,15 @@ controls model =
 
         best =
             span
-                [ style <| infoStyle ++ [ "color" => "green" ] ]
+                [ style <|
+                    infoStyle
+                        ++ [ "color" => "green" ]
+                        ++ (if model.best == 0 then
+                                [ "display" => "none" ]
+                            else
+                                []
+                           )
+                ]
                 [ "Best: " ++ toString model.best |> text ]
     in
         div [ class "controls" ]
