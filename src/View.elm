@@ -85,10 +85,15 @@ view model =
             ]
 
 
+smallText txt =
+    p [ style [ "font-size" => "small", "color" => "#3e3e3e" ] ] [ text txt ]
+
+
 metaConfig : Model -> Html Msg
 metaConfig model =
     div []
         [ title "DATA"
+        , smallText "Select dataset"
         , dataSets model
         ]
 
