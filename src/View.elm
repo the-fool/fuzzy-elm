@@ -85,10 +85,6 @@ view model =
             ]
 
 
-smallText txt =
-    p [ style [ "font-size" => "small", "color" => "#3e3e3e" ] ] [ text txt ]
-
-
 metaConfig : Model -> Html Msg
 metaConfig model =
     div []
@@ -120,7 +116,7 @@ controls maxWidth model =
                 }
             else
                 { msg = Pause
-                , text = "Stop"
+                , text = "Pause"
                 , bkgrnd = "#f44336"
                 }
 
@@ -142,7 +138,7 @@ controls maxWidth model =
                 , style [ "background" => "#e8e8e8" ]
                 , onClick Reset
                 ]
-                [ text "Reset" ]
+                [ i [ class "fa fa-refresh", style [ "padding-right" => "7px" ] ] [], text "Reset" ]
 
         infoStyle =
             [ "margin-left" => px 20
@@ -273,15 +269,23 @@ hovercard model =
             [ model.hoverCard.weight |> toString |> String.left 5 |> (++) "Weight: " |> text ]
 
 
-title txt =
-    h3 [ style [ "font-weight" => "100" ] ] [ text txt ]
-
-
 output : Model -> Int -> Html Msg
 output model w =
     let
         scale x a =
             a |> toFloat |> (*) x |> truncate
+
+        errorText er =
+            (if er == 0 then
+                ""
+             else if er < 0.001 then
+                " < 0.001"
+             else
+                toString er
+                    |> String.left 5
+            )
+                |> (++) "Error: "
+                |> text
 
         error =
             div
@@ -289,7 +293,7 @@ output model w =
                     [ "margin-bottom" => "10px"
                     ]
                 ]
-                [ toString model.network.error |> String.left 5 |> (++) "Error: " |> text ]
+                [ errorText model.network.error ]
     in
         div
             []
@@ -401,6 +405,7 @@ viewEntryLayer entryLayer =
                         ++ position ( 0, dy y )
                         ++ activeStyle entryConfig
                         ++ neuronShadowBorder
+                        ++ [ "cursor" => "pointer" ]
                     )
                 ]
                 []
@@ -536,10 +541,6 @@ viewLinks gutter maxWidth network =
             (List.concat (entry ++ hidden ++ output))
 
 
-neuronShadowBorder =
-    shadow :: [ "border-radius" => "3px" ]
-
-
 viewNeuron : (Int -> Int) -> Int -> Int -> Neuron -> Html Msg
 viewNeuron gutter x y neuron =
     let
@@ -580,3 +581,18 @@ square w =
 shadow : ( String, String )
 shadow =
     "box-shadow" => "0 2px 2px 0 rgba(0, 0, 0, 0.14),0 1px 5px 0 rgba(0, 0, 0, 0.12),0 3px 1px -2px rgba(0, 0, 0, 0.2)"
+
+
+title : String -> Html Msg
+title txt =
+    h3 [ style [ "font-weight" => "100" ] ] [ text txt ]
+
+
+smallText : String -> Html Msg
+smallText txt =
+    p [ style [ "font-size" => "small", "color" => "#3e3e3e" ] ] [ text txt ]
+
+
+neuronShadowBorder : List ( String, String )
+neuronShadowBorder =
+    shadow :: [ "border-radius" => "3px" ]
