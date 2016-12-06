@@ -6,14 +6,17 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (on)
 import Core
-import Datasets
 import Array exposing (Array)
 import Update exposing (paintBrusher)
+import Models exposing (..)
 
 
-largeChart : Int -> Array Datasets.Point -> Html.Html Update.Msg
-largeChart dim data =
+largeChart : Int -> Model -> Html.Html Update.Msg
+largeChart dim model =
     let
+        data =
+            model.inputs
+
         factor =
             (+) Core.dataRange >> (*) (toFloat dim / (Core.dataRange * 2))
 
@@ -30,16 +33,33 @@ largeChart dim data =
             else
                 Core.colors |> .negative
 
+        styles =
+            ((if model.dataMode == Custom then
+                [ ( "cursor", "pointer" ) ]
+              else
+                [ ( "cursor", "normal" ) ]
+             )
+                ++ [ ( "position", "relative" ) ]
+            )
+                |> Html.Attributes.style
+
+        events =
+            if model.dataMode == Custom then
+                [ Svg.Events.on "mousdown" (paintBrusher dim) ]
+            else
+                []
+
         toCircle { coord, label } =
             circle [ cx (Tuple.first coord |> s), cy (Tuple.second coord |> s), r (s 3), stroke "white", strokeWidth "1", fillColor label |> fill ] []
     in
         svg
-            [ version "1.1"
-            , x "0"
-            , y "0"
-            , width <| toString dim
-            , height <| toString dim
-            , Html.Attributes.style [ ( "position", "relative" ) ]
-            , Svg.Events.on "mousedown" (paintBrusher dim)
-            ]
+            ([ version "1.1"
+             , x "0"
+             , y "0"
+             , width <| toString dim
+             , height <| toString dim
+             , styles
+             , Svg.Events.on "mousedown" (paintBrusher dim)
+             ]
+            )
             (List.map toCircle normalizedData)

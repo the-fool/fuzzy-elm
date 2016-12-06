@@ -1,6 +1,7 @@
 module View exposing (..)
 
 import Html exposing (..)
+import Html.Lazy exposing (lazy2)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (attribute, class, id, style)
 import List.Extra
@@ -339,7 +340,7 @@ output model w =
                     ]
                 ]
                 []
-            , SvgViews.largeChart w model.inputs
+            , SvgViews.largeChart w model
             , paintControls
             ]
 

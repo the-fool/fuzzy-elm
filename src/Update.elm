@@ -159,7 +159,10 @@ update message model =
                 newInputs =
                     Array.push { coord = ( x, y ), label = label } model.customData
             in
-                { model | customData = newInputs, inputs = newInputs } ! []
+                if model.dataMode == Custom then
+                    { model | customData = newInputs, inputs = newInputs } ! []
+                else
+                    model ! []
 
         HideHoverCard ->
             { model | hoverCard = { x = 0, y = 0, visible = False, weight = 0 } } ! []
