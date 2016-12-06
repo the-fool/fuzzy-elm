@@ -38,11 +38,11 @@ type Msg
     | SetBrush Brush
     | PaintCanvases Buffer
     | ShowHoverCard Float Position
-    | AddPoint Position
+    | AddPoint Datasets.Coord
     | HideHoverCard
 
 
-mouseEventDecoder : (Position -> Msg) -> Decoder Msg
+mouseEventDecoder : ({ x : Int, y : Int } -> Msg) -> Decoder Msg
 mouseEventDecoder cb =
     Decode.succeed (cb)
         |: (Decode.succeed Position
@@ -59,8 +59,11 @@ hoverCardPositioner weight =
 paintBrusher : Int -> Decoder Msg
 paintBrusher maxRange =
     let
+        scaler =
+            Core.scale ( 0, toFloat maxRange ) ( -Core.dataRange, Core.dataRange )
+
         scale { x, y } =
-            { x = x, y = y }
+            ( scaler (toFloat x), scaler (toFloat y) )
     in
         mouseEventDecoder
             (\coord -> AddPoint (scale coord))
@@ -143,11 +146,18 @@ update message model =
         PaintCanvases payload ->
             model ! [ Canvas.paintCanvas payload ]
 
-        AddPoint { x, y } ->
+        AddPoint ( x, y ) ->
             let
+                label =
+                    case model.brush of
+                        Positive ->
+                            1
+
+                        Negative ->
+                            -1
+
                 newInputs =
-                    Array.push { coord = ( toFloat x, toFloat y ), label = 1 } model.customData
-                        |> Debug.log "inputs"
+                    Array.push { coord = ( x, y ), label = label } model.customData
             in
                 { model | customData = newInputs, inputs = newInputs } ! []
 

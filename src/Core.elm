@@ -27,12 +27,14 @@ numInputs =
     200
 
 
+scale : ( Float, Float ) -> ( Float, Float ) -> Float -> Float
+scale ( min, max ) ( a, b ) x =
+    (b - a) * (x - min) / (max - min) + a
+
+
 brutePoints : List ( Float, Float )
 brutePoints =
     let
-        scale ( min, max ) ( a, b ) x =
-            (b - a) * (x - min) / (max - min) + a
-
         scaleFun =
             scale ( 0, toFloat density ) ( -dataRange, dataRange )
 
