@@ -15,6 +15,11 @@ type NetworkState
     | Paused
 
 
+type Brush
+    = Positive
+    | Negative
+
+
 type DataMode
     = Custom
     | Stock Dataset
@@ -31,6 +36,7 @@ type alias Model =
     , best : Int
     , customData : Array Point
     , dataMode : DataMode
+    , brush : Brush
     }
 
 
@@ -64,4 +70,5 @@ initialModel =
     , best = 0
     , customData = Array.fromList []
     , dataMode = Stock Datasets.XOR
+    , brush = Positive
     }

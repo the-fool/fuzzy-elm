@@ -1,6 +1,6 @@
 module Update exposing (..)
 
-import Models exposing (Model, NetworkState(..), DataMode(..))
+import Models exposing (Model, NetworkState(..), DataMode(..), Brush(..))
 import Core
 import Datasets exposing (Point, Dataset)
 import Network exposing (..)
@@ -34,6 +34,7 @@ type Msg
     | ToggleEntry Network.EntryNeuronType
     | WindowResize ( Int, Int )
     | SetDataMode DataMode
+    | SetBrush Brush
     | PaintCanvases Buffer
     | ShowHoverCard Float Position
     | HideHoverCard
@@ -137,6 +138,9 @@ update message model =
 
         WindowResize ( width, height ) ->
             ( { model | window = ( width, height ) }, Cmd.batch [ Canvas.paintEntry model.network, Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network) ] )
+
+        SetBrush kind ->
+            { model | brush = kind } ! []
 
         SetDataMode mode ->
             let

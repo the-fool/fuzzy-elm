@@ -305,7 +305,7 @@ output model w =
         swatchDim =
             15
 
-        swatch i color =
+        swatch i color brush =
             span
                 [ style
                     [ "display" => "inline-block"
@@ -315,14 +315,14 @@ output model w =
                     , "margin-right" => px swatchDim
                     , "cursor" => "pointer"
                     ]
-                , onClick (SetDataMode Custom)
+                , onClick (SetBrush brush)
                 ]
                 []
 
         paintControls =
             div [ style (customDisplay ++ [ "height" => px swatchDim ]) ]
-                [ swatch 0 colors.negative
-                , swatch 1 colors.positive
+                [ swatch 0 colors.negative Negative
+                , swatch 1 colors.positive Positive
                 ]
     in
         div
