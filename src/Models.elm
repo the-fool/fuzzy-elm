@@ -15,7 +15,7 @@ type NetworkState
     | Paused
 
 
-type Data
+type DataMode
     = Custom
     | Stock Dataset
 
@@ -30,7 +30,7 @@ type alias Model =
     , hoverCard : HoverCard
     , best : Int
     , customData : Array Point
-    , dataset : Data
+    , dataset : DataMode
     }
 
 

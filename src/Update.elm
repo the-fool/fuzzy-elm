@@ -1,6 +1,6 @@
 module Update exposing (..)
 
-import Models exposing (Model, NetworkState(..), Data(..))
+import Models exposing (Model, NetworkState(..), DataMode(..))
 import Core
 import Datasets exposing (Point, Dataset)
 import Network exposing (..)
@@ -33,7 +33,7 @@ type Msg
     | Learn Time
     | ToggleEntry Network.EntryNeuronType
     | WindowResize ( Int, Int )
-    | SetInput Data
+    | SetInput DataMode
     | PaintCanvases Buffer
     | ShowHoverCard Float Position
     | HideHoverCard
