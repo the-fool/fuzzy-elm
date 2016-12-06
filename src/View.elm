@@ -72,9 +72,9 @@ view model =
         div
             [ class "main-wrapper" ]
             [ header
+            , controls maxWidth model
             , div [ class "ui-wrapper clearfix mx-auto", style [ "width" => px maxWidth ] ]
-                [ controls model
-                , div [ class "visuals" ]
+                [ div [ class "visuals", style [ "margin-top" => "20px" ] ]
                     [ column datasetsWidth <| metaConfig model
                     , div [ class "nodes clearfix", style [ "margin-left" => (datasetsWidth |> factor |> px) ] ]
                         [ column networkWidth <| networkView model (factor networkWidth)
@@ -87,8 +87,8 @@ view model =
 
 metaConfig : Model -> Html Msg
 metaConfig model =
-    div [ style [ "margin-top" => "30px" ] ]
-        [ p [] [ text "Select dataset:" ]
+    div []
+        [ title "DATA"
         , dataSets model
         ]
 
@@ -96,7 +96,7 @@ metaConfig model =
 header : Html Msg
 header =
     div
-        [ class "clearfix mb2 white bg-black"
+        [ class "clearfix white bg-black"
         ]
         [ div
             [ class "left p2" ]
@@ -104,8 +104,8 @@ header =
         ]
 
 
-controls : Model -> Html Msg
-controls model =
+controls : Int -> Model -> Html Msg
+controls maxWidth model =
     let
         buttonConfig =
             if model.state == Paused then
@@ -134,6 +134,7 @@ controls model =
         reset =
             Polymer.Paper.button
                 [ attribute "raised" "raised"
+                , style [ "background" => "#e8e8e8" ]
                 , onClick Reset
                 ]
                 [ text "Reset" ]
@@ -162,11 +163,21 @@ controls model =
                 ]
                 [ "Best: " ++ toString model.best |> text ]
     in
-        div [ class "controls" ]
-            [ reset
-            , toggleButton
-            , ticker
-            , best
+        div
+            [ class "controls"
+            , style
+                [ "padding" => "30px"
+                , "background" => "white"
+                , "border-bottom" => "1px solid #ddd"
+                , "box-shadow" => "0 1px 4px rgba(0,0,0,0.08)"
+                ]
+            ]
+            [ div [ class "clearfix mx-auto", style [ "width" => px maxWidth ] ]
+                [ reset
+                , toggleButton
+                , ticker
+                , best
+                ]
             ]
 
 
@@ -210,7 +221,6 @@ networkView model networkWidth =
     in
         div
             [ class "network-wrapper"
-            , style [ "margin-top" => "20px" ]
             ]
             [ div
                 [ class "layer-editor-wrapper"
@@ -258,6 +268,10 @@ hovercard model =
             [ model.hoverCard.weight |> toString |> String.left 5 |> (++) "Weight: " |> text ]
 
 
+title txt =
+    h3 [ style [ "font-weight" => "100" ] ] [ text txt ]
+
+
 output : Model -> Int -> Html Msg
 output model w =
     let
@@ -274,7 +288,7 @@ output model w =
     in
         div
             []
-            [ h3 [ style [ "font-weight" => "100" ] ] [ text "OUTPUT" ]
+            [ title "OUTPUT"
             , error
             , canvas
                 [ id "output"
@@ -310,7 +324,7 @@ viewModLayers layers =
             , onClick (RemoveLayer)
             ]
             [ i [ class "fa fa-minus mr1" ] [] ]
-        , p [ class "regular" ] [ text (toString (List.length layers) ++ " HIDDEN LAYERS") ]
+        , title (toString (List.length layers) ++ " HIDDEN LAYERS")
         ]
 
 
@@ -381,6 +395,7 @@ viewEntryLayer entryLayer =
                     (square geometry.boxSize
                         ++ position ( 0, dy y )
                         ++ activeStyle entryConfig
+                        ++ neuronShadowBorder
                     )
                 ]
                 []
@@ -516,6 +531,10 @@ viewLinks gutter maxWidth network =
             (List.concat (entry ++ hidden ++ output))
 
 
+neuronShadowBorder =
+    shadow :: [ "border-radius" => "3px" ]
+
+
 viewNeuron : (Int -> Int) -> Int -> Int -> Neuron -> Html Msg
 viewNeuron gutter x y neuron =
     let
@@ -531,6 +550,7 @@ viewNeuron gutter x y neuron =
                 , style
                     (square geometry.boxSize
                         ++ position ( dx, dy )
+                        ++ neuronShadowBorder
                     )
                 ]
                 []
