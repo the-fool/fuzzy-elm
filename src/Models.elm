@@ -22,6 +22,7 @@ type alias Model =
     , nTicks : Int
     , randomSeed : Random.Seed
     , hoverCard : HoverCard
+    , best : Int
     }
 
 
@@ -52,4 +53,5 @@ initialModel =
     , nTicks = 0
     , randomSeed = seed0
     , hoverCard = { x = 0, y = 0, weight = 0.0, visible = False }
+    , best = 0
     }

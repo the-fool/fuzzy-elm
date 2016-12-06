@@ -138,20 +138,27 @@ controls model =
                 ]
                 [ text "Reset" ]
 
+        infoStyle =
+            [ "margin-left" => px 20
+            , "font-size" => "larger"
+            , "font-weight" => "100"
+            ]
+
         ticker =
             span
-                [ style
-                    [ "margin-left" => px 20
-                    , "font-size" => "larger"
-                    , "font-weight" => "100"
-                    ]
-                ]
+                [ style infoStyle ]
                 [ "Epochs: " ++ toString model.nTicks |> text ]
+
+        best =
+            span
+                [ style <| infoStyle ++ [ "color" => "green" ] ]
+                [ "Best: " ++ toString model.best |> text ]
     in
         div [ class "controls" ]
             [ reset
             , toggleButton
             , ticker
+            , best
             ]
 
 
@@ -194,7 +201,9 @@ networkView model networkWidth =
             networkWidth |> (+) -geometry.networkMarginRight |> (+) -(geometry.boxSize + 20) |> (flip (//)) (List.length network.layers) |> (*)
     in
         div
-            [ class "network-wrapper" ]
+            [ class "network-wrapper"
+            , style [ "margin-top" => "50px" ]
+            ]
             [ div
                 [ class "layer-editor-wrapper"
                 , style [ "margin-left" => px geometry.boxSize ]
@@ -250,7 +259,7 @@ output model w =
         error =
             div
                 [ style
-                    [ "margin-bottom" => "20px"
+                    [ "margin-bottom" => "10px"
                     ]
                 ]
                 [ toString model.network.error |> String.left 5 |> (++) "Error: " |> text ]

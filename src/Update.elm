@@ -148,21 +148,29 @@ update message model =
             { model | state = Paused, nTicks = 0 } ! []
 
         Learn time ->
-            ( swapSeed
-                { model
-                    | network = processNetwork model
-                    , nTicks =
-                        {- There is some sort of race condition with switching out animation frame subs,
-                           which results in the ticks being incremented once after the state should be paused,
-                           as if this update routine is still in the queso, this extra check fixes the problem
-                        -}
-                        if model.state == Going then
-                            model.nTicks + 1
-                        else
-                            model.nTicks
-                }
-            , Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network)
-            )
+            let
+                bestSetter model =
+                    if ((model.network.error < 0.01) && ((model.nTicks < model.best) || model.best == 0)) then
+                        model.nTicks
+                    else
+                        model.best
+            in
+                ( swapSeed
+                    { model
+                        | network = processNetwork model
+                        , nTicks =
+                            {- There is some sort of race condition with switching out animation frame subs,
+                               which results in the ticks being incremented once after the state should be paused,
+                               as if this update routine is still in the queso, this extra check fixes the problem
+                            -}
+                            if model.state == Going then
+                                model.nTicks + 1
+                            else
+                                model.nTicks
+                        , best = bestSetter model
+                    }
+                , Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network)
+                )
 
         AddNeuron column ->
             let
