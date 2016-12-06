@@ -7,8 +7,22 @@ import Svg.Attributes exposing (..)
 import Svg.Events exposing (on)
 import Core
 import Array exposing (Array)
-import Update exposing (paintBrusher)
+import Json.Decode as Decode exposing (Decoder)
+import Update exposing (mouseEventDecoder, Msg(..))
 import Models exposing (..)
+
+
+paintBrusher : Int -> Decoder Msg
+paintBrusher maxRange =
+    let
+        scaler =
+            Core.scale ( 0, toFloat maxRange ) ( -Core.dataRange, Core.dataRange )
+
+        scale { x, y } =
+            ( scaler (toFloat x), scaler (toFloat y) )
+    in
+        mouseEventDecoder
+            (\coord -> AddPoint (scale coord))
 
 
 largeChart : Int -> Model -> Html.Html Update.Msg

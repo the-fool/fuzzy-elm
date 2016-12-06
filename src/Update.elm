@@ -22,6 +22,11 @@ type alias Position =
     { x : Int, y : Int }
 
 
+type BackAction
+    = Step
+    | All
+
+
 type Msg
     = NoOp
     | AddNeuron Column
@@ -40,6 +45,7 @@ type Msg
     | ShowHoverCard Float Position
     | AddPoint Datasets.Coord
     | HideHoverCard
+    | CustomDataBack BackAction
 
 
 mouseEventDecoder : ({ x : Int, y : Int } -> Msg) -> Decoder Msg
@@ -54,19 +60,6 @@ mouseEventDecoder cb =
 hoverCardPositioner : Float -> Decoder Msg
 hoverCardPositioner weight =
     mouseEventDecoder (ShowHoverCard weight)
-
-
-paintBrusher : Int -> Decoder Msg
-paintBrusher maxRange =
-    let
-        scaler =
-            Core.scale ( 0, toFloat maxRange ) ( -Core.dataRange, Core.dataRange )
-
-        scale { x, y } =
-            ( scaler (toFloat x), scaler (toFloat y) )
-    in
-        mouseEventDecoder
-            (\coord -> AddPoint (scale coord))
 
 
 alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Model -> Network
@@ -145,6 +138,25 @@ update message model =
 
         PaintCanvases payload ->
             model ! [ Canvas.paintCanvas payload ]
+
+        CustomDataBack action ->
+            let
+                alteration =
+                    case action of
+                        Step ->
+                            \points ->
+                                points
+                                    |> Array.length
+                                    |> (+) -1
+                                    |> \l -> Array.slice 0 l points
+
+                        All ->
+                            always (Array.fromList [])
+
+                newCustomData =
+                    alteration model.customData
+            in
+                { model | inputs = newCustomData, customData = newCustomData } ! []
 
         AddPoint ( x, y ) ->
             let

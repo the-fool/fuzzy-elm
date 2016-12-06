@@ -8,7 +8,7 @@ import List.Extra
 import Datasets exposing (Dataset(..))
 import Models exposing (..)
 import Network exposing (..)
-import Update exposing (Msg(..))
+import Update exposing (Msg(..), BackAction(..))
 import SvgViews
 import Svg
 import Svg.Events
@@ -298,31 +298,50 @@ output model w =
 
         customDisplay =
             if model.dataMode == Custom then
-                [ "display" => "block" ]
+                [ "display" => "flex" ]
             else
                 [ "display" => "none" ]
 
         swatchDim =
             15
 
-        swatch i color brush =
-            span
-                [ style
-                    [ "display" => "inline-block"
-                    , "width" => px swatchDim
-                    , "height" => px swatchDim
-                    , "background" => color
+        backer icon msg =
+            i
+                [ class <| "fa fa-" ++ icon
+                , onClick msg
+                , style
+                    [ "cursor" => "pointer"
                     , "margin-right" => px swatchDim
-                    , "cursor" => "pointer"
                     ]
+                ]
+                []
+
+        swatchBorder brush =
+            if brush == model.brush then
+                [ "border" => "2px solid black" ]
+            else
+                []
+
+        swatch color brush margin =
+            span
+                [ style <|
+                    swatchBorder brush
+                        ++ [ "width" => px swatchDim
+                           , "height" => px swatchDim
+                           , "background" => color
+                           , "margin-left" => margin
+                           , "cursor" => "pointer"
+                           ]
                 , onClick (SetBrush brush)
                 ]
                 []
 
         paintControls =
             div [ style (customDisplay ++ [ "height" => px swatchDim ]) ]
-                [ swatch 0 colors.negative Negative
-                , swatch 1 colors.positive Positive
+                [ backer "angle-double-left" (CustomDataBack All)
+                , backer "angle-left" (CustomDataBack Step)
+                , swatch colors.negative Negative "auto"
+                , swatch colors.positive Positive "10px"
                 ]
     in
         div
