@@ -11,6 +11,7 @@ import Task
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Extra as Decode exposing ((|:))
 import Buffer exposing (Buffer)
+import Array
 
 
 type alias Column =
@@ -37,16 +38,32 @@ type Msg
     | SetBrush Brush
     | PaintCanvases Buffer
     | ShowHoverCard Float Position
+    | AddPoint Position
     | HideHoverCard
 
 
-mouseEventDecoder : Float -> Decoder Msg
-mouseEventDecoder weight =
-    Decode.succeed (ShowHoverCard weight)
+mouseEventDecoder : (Position -> Msg) -> Decoder Msg
+mouseEventDecoder cb =
+    Decode.succeed (cb)
         |: (Decode.succeed Position
                 |: (Decode.field "layerX" Decode.int)
                 |: (Decode.field "layerY" Decode.int)
            )
+
+
+hoverCardPositioner : Float -> Decoder Msg
+hoverCardPositioner weight =
+    mouseEventDecoder (ShowHoverCard weight)
+
+
+paintBrusher : Int -> Decoder Msg
+paintBrusher maxRange =
+    let
+        scale { x, y } =
+            { x = x, y = y }
+    in
+        mouseEventDecoder
+            (\coord -> AddPoint (scale coord))
 
 
 alterLayerCount : (Int -> Bool) -> (List Int -> List Int) -> Model -> Network
@@ -125,6 +142,14 @@ update message model =
 
         PaintCanvases payload ->
             model ! [ Canvas.paintCanvas payload ]
+
+        AddPoint { x, y } ->
+            let
+                newInputs =
+                    Array.push { coord = ( toFloat x, toFloat y ), label = 1 } model.customData
+                        |> Debug.log "inputs"
+            in
+                { model | customData = newInputs, inputs = newInputs } ! []
 
         HideHoverCard ->
             { model | hoverCard = { x = 0, y = 0, visible = False, weight = 0 } } ! []

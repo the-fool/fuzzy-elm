@@ -4,12 +4,14 @@ import Html exposing (Html)
 import Html.Attributes
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
+import Svg.Events exposing (on)
 import Core
 import Datasets
 import Array exposing (Array)
+import Update exposing (paintBrusher)
 
 
-largeChart : Int -> Array Datasets.Point -> Html.Html a
+largeChart : Int -> Array Datasets.Point -> Html.Html Update.Msg
 largeChart dim data =
     let
         factor =
@@ -38,5 +40,6 @@ largeChart dim data =
             , width <| toString dim
             , height <| toString dim
             , Html.Attributes.style [ ( "position", "relative" ) ]
+            , Svg.Events.on "mousedown" (paintBrusher dim)
             ]
             (List.map toCircle normalizedData)

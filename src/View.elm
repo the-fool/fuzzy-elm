@@ -1,7 +1,6 @@
 module View exposing (..)
 
 import Html exposing (..)
-import Html.Lazy exposing (lazy2)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (attribute, class, id, style)
 import List.Extra
@@ -340,7 +339,7 @@ output model w =
                     ]
                 ]
                 []
-            , lazy2 SvgViews.largeChart w model.inputs
+            , SvgViews.largeChart w model.inputs
             , paintControls
             ]
 
@@ -543,7 +542,7 @@ viewLinks gutter maxWidth network =
 
         invisiPath w x left right =
             Svg.path
-                [ Svg.Events.on "mouseover" (Update.mouseEventDecoder w)
+                [ Svg.Events.on "mouseover" (Update.hoverCardPositioner w)
                 , Svg.Events.onMouseOut HideHoverCard
                 , dString x left right |> d
                 , style
