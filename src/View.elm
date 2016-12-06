@@ -189,7 +189,7 @@ dataSets model =
         dataSelector ( kind, name ) =
             Polymer.Paper.item
                 [ kind
-                    |> SetInput
+                    |> SetDataMode
                     |> onClick
                 ]
                 [ text name ]
@@ -303,7 +303,7 @@ output model w =
                 [ "display" => "none" ]
 
         swatchDim =
-            10
+            15
 
         swatch i color =
             span
@@ -312,8 +312,10 @@ output model w =
                     , "width" => px swatchDim
                     , "height" => px swatchDim
                     , "background" => color
-                    , "margin-left" => px swatchDim
+                    , "margin-right" => px swatchDim
+                    , "cursor" => "pointer"
                     ]
+                , onClick (SetDataMode Custom)
                 ]
                 []
 

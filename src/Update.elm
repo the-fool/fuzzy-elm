@@ -33,7 +33,7 @@ type Msg
     | Learn Time
     | ToggleEntry Network.EntryNeuronType
     | WindowResize ( Int, Int )
-    | SetInput DataMode
+    | SetDataMode DataMode
     | PaintCanvases Buffer
     | ShowHoverCard Float Position
     | HideHoverCard
@@ -138,7 +138,7 @@ update message model =
         WindowResize ( width, height ) ->
             ( { model | window = ( width, height ) }, Cmd.batch [ Canvas.paintEntry model.network, Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network) ] )
 
-        SetInput mode ->
+        SetDataMode mode ->
             let
                 newPoints =
                     case mode of

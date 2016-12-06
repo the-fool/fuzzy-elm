@@ -275,7 +275,7 @@ batchLearn network inputs =
     { network | error = 0 }
         |> \n ->
             Array.foldl learn n inputs
-                |> \n -> { n | error = n.error / (Array.length inputs |> toFloat) }
+                |> \n -> { n | error = n.error / (Array.length inputs |> (+) 1 |> toFloat) }
 
 
 learn : Datasets.Point -> Network -> Network
