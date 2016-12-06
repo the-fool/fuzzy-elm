@@ -316,25 +316,33 @@ output model w =
 
 viewModLayers : List Layer -> Html Msg
 viewModLayers layers =
-    div
-        [ style
-            [ "display" => "flex"
-            , "justify-content" => "center"
-            , "padding-bottom" => "15px"
+    let
+        layerTitle =
+            "HIDDEN LAYER"
+                ++ if ((List.length layers) /= 1) then
+                    "S"
+                   else
+                    ""
+    in
+        div
+            [ style
+                [ "display" => "flex"
+                , "justify-content" => "center"
+                , "padding-bottom" => "15px"
+                ]
             ]
-        ]
-        [ button
-            [ class "btn regular"
-            , onClick (AddLayer)
+            [ button
+                [ class "btn regular"
+                , onClick (AddLayer)
+                ]
+                [ i [ class "fa fa-plus mr1" ] [] ]
+            , button
+                [ class "btn regular"
+                , onClick (RemoveLayer)
+                ]
+                [ i [ class "fa fa-minus mr1" ] [] ]
+            , title (toString (List.length layers) ++ " " ++ layerTitle)
             ]
-            [ i [ class "fa fa-plus mr1" ] [] ]
-        , button
-            [ class "btn regular"
-            , onClick (RemoveLayer)
-            ]
-            [ i [ class "fa fa-minus mr1" ] [] ]
-        , title (toString (List.length layers) ++ " HIDDEN LAYERS")
-        ]
 
 
 viewModNeurons : (Int -> Int) -> List Layer -> Html Msg
