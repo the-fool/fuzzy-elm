@@ -4,6 +4,7 @@ import Network exposing (..)
 import Datasets
 import Random.Pcg as Random
 import Array exposing (Array)
+import Datasets exposing (Point, Dataset)
 
 
 -- TODO: Write a decode/encode to move union types to localStorage
@@ -12,6 +13,11 @@ import Array exposing (Array)
 type NetworkState
     = Going
     | Paused
+
+
+type Data
+    = Custom
+    | Stock Dataset
 
 
 type alias Model =
@@ -23,6 +29,8 @@ type alias Model =
     , randomSeed : Random.Seed
     , hoverCard : HoverCard
     , best : Int
+    , customData : Array Point
+    , dataset : Data
     }
 
 
@@ -54,4 +62,6 @@ initialModel =
     , randomSeed = seed0
     , hoverCard = { x = 0, y = 0, weight = 0.0, visible = False }
     , best = 0
+    , customData = Array.fromList []
+    , dataset = Stock Datasets.XOR
     }

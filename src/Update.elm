@@ -1,9 +1,8 @@
 module Update exposing (..)
 
-import Array exposing (Array)
-import Models exposing (Model, NetworkState(..))
+import Models exposing (Model, NetworkState(..), Data(..))
 import Core
-import Datasets exposing (Point)
+import Datasets exposing (Point, Dataset)
 import Network exposing (..)
 import Time exposing (Time)
 import Random.Pcg as Random
@@ -34,7 +33,7 @@ type Msg
     | Learn Time
     | ToggleEntry Network.EntryNeuronType
     | WindowResize ( Int, Int )
-    | SetInput (Array Point)
+    | SetInput Data
     | PaintCanvases Buffer
     | ShowHoverCard Float Position
     | HideHoverCard
@@ -139,8 +138,17 @@ update message model =
         WindowResize ( width, height ) ->
             ( { model | window = ( width, height ) }, Cmd.batch [ Canvas.paintEntry model.network, Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network) ] )
 
-        SetInput points ->
-            { model | inputs = points, network = (Network.shuffleNetwork model.randomSeed model.network), best = 0 } |> onNetworkChange
+        SetInput mode ->
+            let
+                newPoints =
+                    case mode of
+                        Custom ->
+                            model.customData
+
+                        Stock kind ->
+                            Datasets.getData kind model.randomSeed
+            in
+                { model | inputs = newPoints, network = (Network.shuffleNetwork model.randomSeed model.network), best = 0 } |> onNetworkChange
 
         Begin ->
             { model | state = Going } ! []

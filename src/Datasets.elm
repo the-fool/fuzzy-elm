@@ -6,12 +6,31 @@ import Array exposing (Array)
 import Core
 
 
+type Dataset
+    = XOR
+    | Gauss
+    | Circle
+
+
 type alias Coord =
     ( Float, Float )
 
 
 type alias Point =
     { coord : Coord, label : Int }
+
+
+getData : Dataset -> Random.Seed -> Array Point
+getData kind =
+    case kind of
+        XOR ->
+            xorData
+
+        Gauss ->
+            gaussData
+
+        Circle ->
+            circleData
 
 
 normal : Float -> Float -> Float -> Float

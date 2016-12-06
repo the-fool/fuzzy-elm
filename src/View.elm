@@ -5,6 +5,7 @@ import Html.Lazy exposing (lazy2)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (attribute, class, id, style)
 import List.Extra
+import Datasets exposing (Dataset(..))
 import Models exposing (..)
 import Network exposing (..)
 import Update exposing (Msg(..))
@@ -185,16 +186,16 @@ controls maxWidth model =
 dataSets : Model -> Html Msg
 dataSets model =
     let
-        dataSelector ( name, handler ) =
+        dataSelector ( kind, name ) =
             Polymer.Paper.item
-                [ handler model.randomSeed
+                [ kind
                     |> SetInput
                     |> onClick
                 ]
                 [ text name ]
 
         dataOptions =
-            [ ( "XOR", xorData ), ( "GAUSSIAN", gaussData ), ( "CIRCLE", circleData ) ]
+            [ ( Stock XOR, "XOR" ), ( Stock Gauss, "Linear" ), ( Stock Circle, "Circle" ), ( Custom, "Custom" ) ]
     in
         div
             [ class "datasets-wrapper"
