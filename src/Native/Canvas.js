@@ -1,6 +1,6 @@
 var tmpScale = d3.scale.linear()
     .domain([-1, 0, 1])
-    .range(["#b3d47d","#e8eaeb","#36578C"])
+    .range(["#b3d47d","#e8eaeb","#2874ae"])
     .clamp(true);
 
 var colors = d3.range(-1, 1 + 1E-9, 1 / 10).map(function(a){
