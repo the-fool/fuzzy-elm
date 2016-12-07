@@ -2,3 +2,4 @@ node_modules
 elm-stuff
 npm-debug.log
 bower_components
+dist
