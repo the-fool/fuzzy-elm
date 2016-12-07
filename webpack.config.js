@@ -26,7 +26,7 @@ module.exports = function makeConfig() {
       {
         test: /\.js$/,
         include: [path.resolve(__dirname, 'src')],
-        exclude: /node_modules/,
+        exclude: /(node_modules|bower_components)/,
         loader: 'babel-loader',
         query: {
           presets: ['es2015']
@@ -46,8 +46,8 @@ module.exports = function makeConfig() {
       },
       {
         test:    /\.elm$/,
-        exclude: [/elm-stuff/, /node_modules/],
-        loader:  'elm-webpack',
+        exclude: [/elm-stuff/, /node_modules/, /bower_components/],
+        loader:  'babel-loader?presets[]=es2015!elm-webpack',
       },
       {
         test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
