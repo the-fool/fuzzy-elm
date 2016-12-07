@@ -3,7 +3,7 @@ var tmpScale = d3.scale.linear()
     .range(["#b3d47d","#e8eaeb","#36578C"])
     .clamp(true);
 
-var colors = d3.range(-1, 1 + 1E-9, 1 / 10).map(a => {
+var colors = d3.range(-1, 1 + 1E-9, 1 / 10).map(function(a){
   return tmpScale(a);
 });
 
@@ -28,7 +28,7 @@ function doPaint(canvas, neuron) {
   var data = neuron.outputs;
   var ctx = canvas.getContext('2d');
   var img = ctx.createImageData(density, density);
-  for (let i = 0, p = -1; i < density*density; i++) {
+  for (var i = 0, p = -1; i < density*density; i++) {
       var c = d3.rgb(color(data[i]));
       img.data[++p] = c.r;
       img.data[++p] = c.g;

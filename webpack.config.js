@@ -1,23 +1,27 @@
 const path = require("path");
+const webpack = require("webpack");
+const isProd = process.env.npm_lifecycle_event === 'build';
 
-module.exports = {
-  entry: {
+module.exports = function makeConfig() {
+  const config = {};
+
+  config.entry =  {
     app: './src/index.js',
     vendor: './src/vendor.js'
 
-  },
+  };
 
-  output: {
+  config.output = {
     path: path.resolve(__dirname + '/dist'),
     filename: '[name].js',
-  },
+  };
 
-  resolve: {
+  config.resolve = {
     modules: [root('src'), root('node_modules')],
     //extensions: ['.js', '.elm']
-  },
+  };
 
-  module: {
+  config.module = {
     loaders: [
       {
         test: /\.js$/,
@@ -56,13 +60,27 @@ module.exports = {
     ],
 
     noParse: /\.elm$/,
-  },
-
-  devServer: {
+  };
+  config.plugins = [];
+  if (isProd) {
+    config.plugins.push(
+      new webpack.optimize.OccurenceOrderPlugin(),
+      new webpack.optimize.DedupePlugin(),
+      new webpack.optimize.UglifyJsPlugin({
+        minimize: true,
+        compressor: {warnings: false}
+      })
+    );
+  }
+  config.devServer = {
     inline: true,
     stats: { colors: true },
-  },
-};
+  };
+
+
+
+  return config;
+}();
 
 
 // Helper functions

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --host 0.0.0.0 --port 3003"
+    "start": "webpack-dev-server --host 0.0.0.0 --port 3003",
+    "build": "webpack --profile"
   },
   "author": "",
   "license": "MIT",
