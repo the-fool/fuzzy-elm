@@ -18,6 +18,7 @@ type alias Network =
     , outputNeuron : Neuron
     , canvasPayload : Buffer
     , error : Float
+    , learningRate : Float
     }
 
 
@@ -124,18 +125,22 @@ entryName nt =
             "Sin Y"
 
 
-toggleEntryNeuron : Network -> EntryNeuronType -> List EntryNeuronType
+toggleEntryNeuron : Network -> EntryNeuronType -> Network
 toggleEntryNeuron network kind =
-    network.entryNeurons
-        |> List.map
-            (\config ->
-                if config.kind == kind then
-                    { config | active = not config.active }
-                else
-                    config
-            )
-        |> List.filter .active
-        |> List.map .kind
+    let
+        newEntryNeurons =
+            network.entryNeurons
+                |> List.map
+                    (\config ->
+                        if config.kind == kind then
+                            { config | active = not config.active }
+                        else
+                            config
+                    )
+                |> List.filter .active
+                |> List.map .kind
+    in
+        { network | entryNeurons = setAllEntryNeurons newEntryNeurons }
 
 
 setAllEntryNeurons : List EntryNeuronType -> List EntryNeuron
@@ -201,7 +206,7 @@ adjustNetwork network deltas =
             network.layers ++ [ [ network.outputNeuron ] ]
 
         newLayers =
-            List.map2 (List.map2 <| adjustWeights 0.05) allLayers deltas
+            List.map2 (List.map2 <| adjustWeights network.learningRate) allLayers deltas
 
         hiddenLayers =
             List.take (List.length network.layers) newLayers
@@ -458,7 +463,7 @@ changeShape seed network layerDims =
         entry =
             network |> getActiveEntry
     in
-        networkFactory seed network.activation entry layerDims
+        networkFactory seed network.activation entry layerDims network.learningRate
 
 
 shuffleNetwork : Random.Seed -> Network -> Network
@@ -470,11 +475,11 @@ shuffleNetwork seed network =
         shape =
             getShape network
     in
-        networkFactory seed network.activation entries shape
+        networkFactory seed network.activation entries shape network.learningRate
 
 
-networkFactory : Random.Seed -> Activation -> List EntryNeuronType -> List Int -> Network
-networkFactory seed activation entryNeurons layerDims =
+networkFactory : Random.Seed -> Activation -> List EntryNeuronType -> List Int -> Float -> Network
+networkFactory seed activation entryNeurons layerDims learningRate =
     let
         layers =
             layersFactory seed (List.length entryNeurons) layerDims
@@ -503,6 +508,7 @@ networkFactory seed activation entryNeurons layerDims =
             , entryNeurons = entryNeuronConfig
             , canvasPayload = Buffer.buffer (List.concat layers |> List.length |> (+) 1)
             , error = 0.0
+            , learningRate = learningRate
             }
 
 

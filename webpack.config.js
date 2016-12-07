@@ -41,7 +41,7 @@ module.exports = function makeConfig() {
       },
       {
         test:    /\.html$/,
-        exclude: /node_modules/,
+        exclude: /(node_modules|bower_components)/,
         loader:  'file?name=[name].[ext]',
       },
       {

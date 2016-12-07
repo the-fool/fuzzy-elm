@@ -50,7 +50,7 @@ type alias HoverCard =
 
 initialNetwork : Network
 initialNetwork =
-    Network.networkFactory seed0 Tanh [ X, Y ] [ 3, 2 ]
+    Network.networkFactory seed0 Tanh [ X, Y ] [ 3, 2 ] 0.01
 
 
 seed0 : Random.Seed

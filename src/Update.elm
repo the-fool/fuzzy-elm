@@ -279,8 +279,5 @@ update message model =
                 { model | network = alterLayerCount predicate action model } |> onNetworkChange
 
         ToggleEntry kind ->
-            { model
-                | network =
-                    Network.networkFactory model.randomSeed model.network.activation (Network.toggleEntryNeuron model.network kind) (Network.getShape model.network)
-            }
+            { model | network = Network.toggleEntryNeuron model.network kind |> Network.shuffleNetwork model.randomSeed }
                 |> onNetworkChange
