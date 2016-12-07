@@ -1,4 +1,3 @@
-
 const buffer = (sz) => new Array(sz);
 
 const set = (i, val, ar) => {
