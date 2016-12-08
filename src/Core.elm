@@ -17,6 +17,11 @@ dataRange =
     5
 
 
+learningRates : List Float
+learningRates =
+    [ 0.001, 0.01, 0.05, 0.1, 0.5 ]
+
+
 density : Int
 density =
     40

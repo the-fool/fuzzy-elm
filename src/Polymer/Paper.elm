@@ -16,3 +16,8 @@ listbox =
 item : List (Attribute a) -> List (Html a) -> Html a
 item =
     node "paper-item"
+
+
+dropdown : List (Attribute a) -> List (Html a) -> Html a
+dropdown =
+    node "paper-dropdown-menu"

@@ -38,6 +38,7 @@ type Msg
     | Reset
     | Learn Time
     | ToggleEntry Network.EntryNeuronType
+    | SetLearningRate Float
     | WindowResize ( Int, Int )
     | SetDataMode DataMode
     | SetBrush Brush
@@ -237,6 +238,13 @@ update message model =
                     }
                 , Task.perform PaintCanvases (Canvas.generateCanvasPayload model.network)
                 )
+
+        SetLearningRate alpha ->
+            let
+                newNetwork network =
+                    { network | learningRate = alpha }
+            in
+                { model | network = newNetwork model.network } ! []
 
         AddNeuron column ->
             let

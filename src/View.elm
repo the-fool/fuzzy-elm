@@ -164,6 +164,23 @@ controls maxWidth model =
                            )
                 ]
                 [ "Best: " ++ toString model.best |> text ]
+
+        learningRate =
+            Polymer.Paper.dropdown
+                [ attribute "label" "Learning rate"
+                , attribute "noink" "noink"
+                , attribute "no-animations" "no-animations"
+                , style [ "float" => "right" ]
+                ]
+                [ Polymer.Paper.listbox
+                    [ class "dropdown-content"
+                    , attribute "selected" "1"
+                    ]
+                    (List.map
+                        (\a -> Polymer.Paper.item [ onClick <| SetLearningRate a ] [ a |> toString |> text ])
+                        Core.learningRates
+                    )
+                ]
     in
         div
             [ class "controls"
@@ -179,6 +196,7 @@ controls maxWidth model =
                 , toggleButton
                 , ticker
                 , best
+                , learningRate
                 ]
             ]
 
