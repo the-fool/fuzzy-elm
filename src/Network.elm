@@ -263,16 +263,8 @@ gradients der ( outputWeights, outputDeltas ) layers outputs =
 
 
 deltas : List (List Float) -> List (List Float) -> List (List (List Float))
-deltas outputs gradients =
-    List.map2
-        (\outs ->
-            List.map
-                (\gradient ->
-                    List.map ((*) gradient) (1 :: outs)
-                )
-        )
-        outputs
-        gradients
+deltas =
+    List.map2 (\outs -> List.map (\gradient -> List.map ((*) gradient) (1 :: outs)))
 
 
 batchLearn : Network -> Array Datasets.Point -> Network
