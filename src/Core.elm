@@ -24,7 +24,7 @@ learningRates =
 
 density : Int
 density =
-    40
+    30
 
 
 numInputs : Int
