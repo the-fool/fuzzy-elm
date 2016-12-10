@@ -521,7 +521,7 @@ dot xs ys =
     if (/=) (List.length xs) (List.length ys) then
         Debug.crash "Incongruent lengths for dot product!"
     else
-        List.sum <| (List.map2 (*) xs ys)
+        (List.map2 (*) xs ys) |> List.sum
 
 
 sigmoid : Float -> Float
