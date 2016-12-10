@@ -174,7 +174,7 @@ controls maxWidth model =
                 ]
                 [ Polymer.Paper.listbox
                     [ class "dropdown-content"
-                    , attribute "selected" "1"
+                    , attribute "selected" "2"
                     ]
                     (List.map
                         (\a -> Polymer.Paper.item [ onClick <| SetLearningRate a ] [ a |> toString |> text ])
